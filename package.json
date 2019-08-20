@@ -1,27 +1,27 @@
 {
-  "name": "jslogger",
-  "version": "1.0.0",
-  "description": "Write colorful logs in browser console.",
-  "main": "src/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/suhaibjanjua/js-logger.git"
-  },
-  "keywords": [
-    "logger",
-    "jslogger",
-    "color",
-    "colorful",
-    "console",
-    "logs"
-  ],
-  "author": "Suhaib A. Janjua <suhaib.janjua@gmail.com> (http://www.suhaibjanjua.com/)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/suhaibjanjua/js-logger/issues"
-  },
-  "homepage": "https://github.com/suhaibjanjua/js-logger#readme"
+    "name": "colorjslogger",
+    "version": "1.0.0",
+    "description": "Write colorful logs in browser console.",
+    "main": "src/index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/suhaibjanjua/js-logger.git"
+    },
+    "keywords": [
+        "logger",
+        "jslogger",
+        "color",
+        "colorful",
+        "console",
+        "logs"
+    ],
+    "author": "Suhaib A. Janjua <suhaib.janjua@gmail.com> (http://www.suhaibjanjua.com/)",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/suhaibjanjua/js-logger/issues"
+    },
+    "homepage": "https://github.com/suhaibjanjua/js-logger#readme"
 }
