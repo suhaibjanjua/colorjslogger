@@ -1,10 +1,10 @@
 {
     "name": "colorjslogger",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Write colorful logs in browser console.",
     "main": "src/index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "mocha src/index.test.js -w"
     },
     "repository": {
         "type": "git",
@@ -23,5 +23,9 @@
     "bugs": {
         "url": "https://github.com/suhaibjanjua/js-logger/issues"
     },
-    "homepage": "https://github.com/suhaibjanjua/js-logger#readme"
+    "homepage": "https://github.com/suhaibjanjua/js-logger#readme",
+    "devDependencies": {
+        "chai": "4.2.0",
+        "mocha": "6.2.0"
+    }
 }
