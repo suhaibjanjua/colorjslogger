@@ -16,7 +16,7 @@ try {
         return datestring;
     };
 
-    var logger = new function(name = 'JSLogger') {
+    var jslogger = new function(name = 'JSLogger') {
 
         var VERBOSE = false;
 
@@ -66,7 +66,7 @@ try {
     if (navigator.appName === "Microsoft Internet Explorer" || !!(navigator.userAgent.match(/Trident/) || navigator.userAgent.match(/rv 11/))) {
         //window.Promise = window.ES6Promise;
         useIE11 = true;
-        logger.warning("Initialize ", "Internet Explorer 11 detected. You need to load ES6-shim in order to work (IE11-compat)");
+        jslogger.warning("Initialize ", "Internet Explorer 11 detected. You need to load ES6-shim in order to work (IE11-compat)");
     }
 } catch (err) {
     console.log("If you see that... Just go away from that code :-)", err);
