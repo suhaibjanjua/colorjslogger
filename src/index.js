@@ -1,5 +1,5 @@
-//var useIE11 = false;
-// var VERBOSE = false;
+var useIE11 = false;
+var VERBOSE = false;
 var isBrowser;
 var console;
 
@@ -57,12 +57,11 @@ exports.debug = function debug(fname, msg) {
     }
 };
 
-// exports.setLevelToVerbose = function setLevelToVerbose(isVerbose) {
-//     VERBOSE = isVerbose;
-// };
+exports.setLevelToVerbose = function setLevelToVerbose(isVerbose) {
+    VERBOSE = isVerbose;
+};
 
-// if (navigator.appName === "Microsoft Internet Explorer" || !!(navigator.userAgent.match(/Trident/) || navigator.userAgent.match(/rv 11/))) {
-//     //window.Promise = window.ES6Promise;
-//     useIE11 = true;
-//     logger.warning("Initialize ", "Internet Explorer 11 detected. You need to load ES6-shim in order to work (IE11-compat)");
-// }
+if (navigator.appName === "Microsoft Internet Explorer" || !!(navigator.userAgent.match(/Trident/) || navigator.userAgent.match(/rv 11/))) {
+    useIE11 = true;
+    logger.warning("Initialize ", "Internet Explorer 11 detected. You need to load ES6-shim in order to work (IE11-compat)");
+}
