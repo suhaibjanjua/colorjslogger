@@ -16,9 +16,10 @@ try {
         return datestring;
     };
 
-    var jslogger = new function(name = 'JSLogger') {
+    var jslogger = new function() {
 
         var VERBOSE = false;
+        var appName = 'JSLogger';
 
         var _log = function _log(process, message, level) {
             var colorLevel = {
@@ -29,9 +30,9 @@ try {
                 "error": "red"
             };
             if (useIE11) {
-                console.log(utc(new Date()) + " | " + name + " | " + "[" + process + "] :: " + message);
+                console.log(utc(new Date()) + " | " + appName + " | " + "[" + process + "] :: " + message);
             } else {
-                console.log("%c " + utc(new Date()) + " | " + name + " | " + "[" + process + "] :: " + message, "color:" + colorLevel[level]);
+                console.log("%c " + utc(new Date()) + " | " + appName + " | " + "[" + process + "] :: " + message, "color:" + colorLevel[level]);
             }
         };
 
@@ -59,6 +60,10 @@ try {
 
         this.setLevelToVerbose = function setLevelToVerbose(isVerbose) {
             VERBOSE = isVerbose;
+        };
+
+        this.setAppName = function setAppName(name) {
+            appName = name;
         };
 
     };
