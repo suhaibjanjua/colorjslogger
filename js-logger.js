@@ -84,7 +84,7 @@ try {
         };
 
         this.about = function about() {
-            return "Website: https://gitlab.com/suhaibjanjua/js-logger \n Copyright: (c) 2019 Suhaib Janjua"
+            return "Website: https://github.com/suhaibjanjua/js-logger \n Copyright: (c) 2019 Suhaib Janjua"
         };
 
     };
