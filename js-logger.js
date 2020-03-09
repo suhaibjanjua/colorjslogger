@@ -20,7 +20,7 @@ try {
     var jslogger = new function() {
 
         var VERBOSE = false;
-        var appName = 'Rainbow-CRM-Bridge';
+        var appName = 'JSLOGGER';
 
         var _log = function _log(process, message, level) {
             var colorLevel = {
