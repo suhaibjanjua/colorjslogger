@@ -1,6 +1,6 @@
 {
-    "name": "colorjslogger",
-    "version": "1.1.0",
+    "name": "jslogger",
+    "version": "1.2.0",
     "description": "Write colorful logs in browser console.",
     "main": "src/index.js",
     "scripts": {

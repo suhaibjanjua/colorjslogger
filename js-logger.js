@@ -9,6 +9,7 @@
  * License: MIT
  */
 try {
+    var objLogs = '';
     var useIE11 = false;
 
     var utc = function utc(now) {
@@ -19,7 +20,7 @@ try {
     var jslogger = new function() {
 
         var VERBOSE = false;
-        var appName = 'JSLogger';
+        var appName = 'Rainbow-CRM-Bridge';
 
         var _log = function _log(process, message, level) {
             var colorLevel = {
@@ -30,9 +31,13 @@ try {
                 "error": "red"
             };
             if (useIE11) {
-                console.log(utc(new Date()) + " | " + appName + " | " + "[" + process + "] :: " + message);
+                var printLog = utc(new Date()) + " | " + appName + " | " + "[" + process + "] :: " + message;
+                objLogs += printLog + "\n";
+                console.log(printLog);
             } else {
-                console.log("%c " + utc(new Date()) + " | " + appName + " | " + "[" + process + "] :: " + message, "color:" + colorLevel[level]);
+                var printLog = utc(new Date()) + " | " + appName + " | " + "[" + process + "] :: " + message;
+                objLogs += printLog + "\n";
+                console.log("%c " + printLog, "color:" + colorLevel[level]);
             }
         };
 
@@ -58,12 +63,28 @@ try {
             }
         };
 
+        this.downloadLogs = function downloadLogs() {
+            var a = document.createElement('a');
+            var file = new Blob([objLogs], { type: 'text/plain' });
+            a.href = URL.createObjectURL(file);
+            a.download = appName + "-" + utc(new Date()) + ".log";
+            a.click();
+        };
+
         this.setLevelToVerbose = function setLevelToVerbose(isVerbose) {
             VERBOSE = isVerbose;
         };
 
         this.setAppName = function setAppName(name) {
             appName = name;
+        };
+
+        this.version = function version() {
+            return "1.2.0"
+        };
+
+        this.about = function about() {
+            return "Website: https://gitlab.com/suhaibjanjua/js-logger \n Copyright: (c) 2019 Suhaib Janjua"
         };
 
     };
@@ -74,5 +95,5 @@ try {
         jslogger.warning("Initialize ", "Internet Explorer 11 detected. You need to load ES6-shim in order to work (IE11-compat)");
     }
 } catch (err) {
-    console.log("If you see that... Just go away from that code :-)", err);
+    console.log("If you see this... Just go away from the code :-)", err);
 }
