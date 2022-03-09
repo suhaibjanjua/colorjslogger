@@ -20,7 +20,7 @@ try {
     var jslogger = new function() {
 
         var VERBOSE = false;
-        var appName = 'JSLOGGER';
+        var appName = 'JS-Logger';
 
         var _log = function _log(process, message, level) {
             var colorLevel = {
@@ -60,6 +60,9 @@ try {
         this.debug = function debug(process, message) {
             if (VERBOSE) {
                 _log(process, message, "debug");
+            } else {
+                var printLog = utc(new Date()) + " | " + appName + " | " + "[" + process + "] :: " + message;
+                objLogs += printLog + "\n";
             }
         };
 
@@ -80,7 +83,7 @@ try {
         };
 
         this.version = function version() {
-            return "1.2.0"
+            return "1.3.0"
         };
 
         this.about = function about() {
@@ -95,5 +98,5 @@ try {
         jslogger.warning("Initialize ", "Internet Explorer 11 detected. You need to load ES6-shim in order to work (IE11-compat)");
     }
 } catch (err) {
-    console.log("If you see this... Just go away from the code :-)", err);
+    console.log("Please ignore it...", err);
 }
