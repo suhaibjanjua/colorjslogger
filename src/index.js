@@ -1,3 +1,5 @@
+var pjson = require('./package.json');
+
 var useIE11 = false;
 var VERBOSE = false;
 var isBrowser;
@@ -51,17 +53,46 @@ exports.warning = function warning(fname, msg) {
     _log(fname, msg, "warning");
 };
 
+exports.internal = function warning(fname, msg) {
+    var printLog = utc(new Date()) + " | " + appName + " | " + "[" + fname + "] :: " + msg;
+    objLogs += printLog + "\n";
+};
+
 exports.debug = function debug(fname, msg) {
     if (VERBOSE) {
         _log(fname, msg, "debug");
+    } else {
+        var printLog = utc(new Date()) + " | " + appName + " | " + "[" + fname + "] :: " + msg;
+        objLogs += printLog + "\n";
     }
+};
+
+exports.downloadLogs = function downloadLogs() {
+    var a = document.createElement('a');
+    var file = new Blob([objLogs], { type: 'text/plain' });
+    a.href = URL.createObjectURL(file);
+    a.download = appName + "-" + utc(new Date()) + ".log";
+    a.click();
 };
 
 exports.setLevelToVerbose = function setLevelToVerbose(isVerbose) {
     VERBOSE = isVerbose;
 };
 
+exports.setAppName = function setAppName(name) {
+    appName = name;
+};
+
+exports.version = function version(name) {
+    return pjson.version;
+};
+
+exports.about = function about() {
+    return "Website: https://github.com/suhaibjanjua/js-logger \n Copyright: (c) 2019 Suhaib Janjua"
+};
+
 if (navigator.appName === "Microsoft Internet Explorer" || !!(navigator.userAgent.match(/Trident/) || navigator.userAgent.match(/rv 11/))) {
+    //window.Promise = window.ES6Promise;
     useIE11 = true;
     logger.warning("Initialize ", "Internet Explorer 11 detected. You need to load ES6-shim in order to work (IE11-compat)");
 }
