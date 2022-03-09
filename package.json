@@ -1,6 +1,6 @@
 {
     "name": "jslogger",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Write colorful logs in browser console.",
     "main": "src/index.js",
     "scripts": {
@@ -28,7 +28,5 @@
         "chai": "4.2.0",
         "mocha": "6.2.0"
     },
-    "dependencies": {
-        "colorjslogger": "^1.1.0"
-    }
+    "dependencies": {}
 }

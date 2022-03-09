@@ -57,6 +57,11 @@ try {
             _log(process, message, "warning");
         };
 
+        this.internal = function internal(process, message) {
+            var printLog = utc(new Date()) + " | " + appName + " | " + "[" + process + "] :: " + message;
+            objLogs += printLog + "\n";
+        };
+
         this.debug = function debug(process, message) {
             if (VERBOSE) {
                 _log(process, message, "debug");
@@ -83,7 +88,7 @@ try {
         };
 
         this.version = function version() {
-            return "1.3.0"
+            return "1.4.0"
         };
 
         this.about = function about() {
