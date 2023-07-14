@@ -1,4 +1,4 @@
-# CHANGELOG of JSLogger
+# CHANGELOG of colorjslogger
 
 ---
 

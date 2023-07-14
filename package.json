@@ -1,6 +1,6 @@
 {
     "name": "colorjslogger",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "Write colorful logs in browser console.",
     "main": "src/jslogger.js",
     "scripts": {
@@ -9,7 +9,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/suhaibjanjua/jslogger.git"
+        "url": "git+https://github.com/suhaibjanjua/colorjslogger.git"
     },
     "keywords": [
         "logger",
@@ -27,9 +27,9 @@
     "author": "Suhaib A. Janjua <suhaib.janjua@gmail.com> (http://www.suhaibjanjua.com/)",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/suhaibjanjua/jslogger/issues"
+        "url": "https://github.com/suhaibjanjua/colorjslogger/issues"
     },
-    "homepage": "https://github.com/suhaibjanjua/jslogger#readme",
+    "homepage": "https://github.com/suhaibjanjua/colorjslogger#readme",
     "devDependencies": {
         "babel-cli": "^6.26.0",
         "babel-preset-env": "^1.7.0",
