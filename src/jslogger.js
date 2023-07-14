@@ -4,7 +4,7 @@
  * It is a perfect logger that supports all browsers.
  * It allows to print color logs with pre-defined 5 levels of logging
  * It has a debug mode in which you can print logs during dev and then set it to false to avoid printing confidential logs during production
- * Website: https://github.com/suhaibjanjua/js-logger
+ * Website: https://github.com/suhaibjanjua/jslogger
  * Copyright: (c) 2019 Suhaib Janjua
  * License: MIT
  */
@@ -20,7 +20,7 @@ try {
     var jslogger = new function() {
 
         var VERBOSE = false;
-        var appName = 'JS-Logger';
+        var appName = 'jslogger';
 
         var _log = function _log(process, message, level) {
             var colorLevel = {
@@ -92,7 +92,7 @@ try {
         };
 
         this.about = function about() {
-            return "Website: https://github.com/suhaibjanjua/js-logger \n Copyright: (c) 2019 Suhaib Janjua"
+            return "Website: https://github.com/suhaibjanjua/jslogger \n Copyright: (c) 2019 Suhaib Janjua"
         };
 
     };

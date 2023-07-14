@@ -1,29 +1,39 @@
 {
     "name": "jslogger",
-    "version": "1.4.0",
+    "version": "2.0.0",
     "description": "Write colorful logs in browser console.",
-    "main": "src/index.js",
+    "main": "src/jslogger.js",
     "scripts": {
-        "test": "mocha src/index.test.js -w"
+        "build": "babel src/jslogger.js | uglifyjs -o src/jslogger.min.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/suhaibjanjua/js-logger.git"
+        "url": "git+https://github.com/suhaibjanjua/jslogger.git"
     },
     "keywords": [
         "logger",
         "jslogger",
         "color",
+        "color logs",
         "colorful",
         "console",
+        "download",
+        "download logs",
+        "browser",
+        "log",
         "logs"
     ],
     "author": "Suhaib A. Janjua <suhaib.janjua@gmail.com> (http://www.suhaibjanjua.com/)",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/suhaibjanjua/js-logger/issues"
+        "url": "https://github.com/suhaibjanjua/jslogger/issues"
     },
-    "homepage": "https://github.com/suhaibjanjua/js-logger#readme",
-    "devDependencies": {},
+    "homepage": "https://github.com/suhaibjanjua/jslogger#readme",
+    "devDependencies": {
+        "babel-cli": "^6.26.0",
+        "babel-preset-env": "^1.7.0",
+        "uglify-js": "^3.17.4"
+    },
     "dependencies": {}
 }
