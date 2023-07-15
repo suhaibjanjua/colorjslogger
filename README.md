@@ -8,7 +8,7 @@ Fast and lightweight colorful JS Logger for the browser and Nodejs. It is a perf
 It allows to print color logs with pre-defined 5 levels of logging (`info`, `warning`, `error`, `success`, `debug`). You can enable the `VERBOSE` flag to print debug logs during the development phase and you can disable it by setting `VERBOSE` flag to false to avoid printing confidential logs in production.
 
 
-### Features
+## Features
 
 - Fast and lightweight
 - Supports multi-color for browser console logs
@@ -87,7 +87,7 @@ try {
 * message (string): Actual log message that needs to log in the console.
 
 
-##### Note
+#### Note
 
 Debug logs will only work if the `VERBOSE` property is set to true. Here is an example how to do it:
 
@@ -102,27 +102,28 @@ jslogger.setLevelToVerbose(true);
 jslogger.info('Authentication', 'Connection in progress');
 ```
 
+#### Output
 
-## Log Output Format
-
-**UTC Date | AppName | [Process] :: Message**
-
-###### Output
-
-**Mon Aug 12 2019 22:37:57 | JSLogger | [Authentication] :: Connection in progress**
+> Mon Aug 12 2019 22:37:57 | JSLogger | [Authentication] :: Connection in progress
 
 
-## Change the Default AppName
+#### Output Format
+
+> Date and Time | AppName | [Process] :: Message
+
+
+## Set AppName for logs
 
 ```js
 jslogger.setAppName('SuhaibJanjuaLogger');
 jslogger.info('Authentication', 'Connection in progress');
 ```
 
-**Mon Aug 12 2019 22:37:57 | SuhaibJanjuaLogger | [Authentication] :: Connection in progress**
+> Mon Aug 12 2019 22:37:57 | SuhaibJanjuaLogger | [Authentication] :: Connection in progress
 
 
-## Log information as internal to avoid printing it into the browser console
+## Prevent confidential information
+Use the internal method to skip the confidential or sensitive data to appear in the console logs. It will be helpful to record the logs in the memory and will be a part of the log file when you [download](#download) it.
 
 ```js
 jslogger.internal('Authentication', 'User with email su****************.com just logged in.');
