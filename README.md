@@ -187,7 +187,7 @@ While specific implementation details for `confidential-logs.md` are not provide
 
 ```javascript
 // Imagine a method for logging sensitive data that might be redacted or excluded from downloads
-jslogger.confidential("User token: abc-xyz-123", { userId: 456 });
+jslogger.internal("User token: abc-xyz-123", { userId: 456 });
 // Depending on ColorJSLogger's internal configuration (which you might set),
 // this could:
 // - Log a redacted message to the console, e.g., "[CONFIDENTIAL] User token: [REDACTED]"
