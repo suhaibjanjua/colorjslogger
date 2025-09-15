@@ -1,11 +1,32 @@
 {
     "name": "colorjslogger",
-    "version": "3.0.1",
-    "description": "Write colorful logs in browser console.",
-    "main": "src/jslogger.js",
+    "version": "3.0.2",
+    "description": "Write colorful logs in browser console with download capabilities and application-specific prefixes.",
+    "main": "dist/jslogger.js",
+    "browser": "dist/jslogger.umd.js",
+    "module": "dist/jslogger.esm.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "src/jslogger.js",
+        "README.md",
+        "LICENSE.md"
+    ],
     "scripts": {
-        "build": "babel src/jslogger.js | uglifyjs -o src/jslogger.min.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "build": "npm run clean && npm run build:umd && npm run build:esm && npm run build:types",
+        "build:umd": "rollup -c rollup.config.js",
+        "build:esm": "rollup -c rollup.config.esm.js",
+        "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+        "clean": "rimraf dist",
+        "dev": "rollup -c rollup.config.js --watch",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "lint": "eslint src --ext .js",
+        "lint:fix": "eslint src --ext .js --fix",
+        "format": "prettier --write \"src/**/*.js\"",
+        "prepublishOnly": "npm run build",
+        "pretest": "npm run lint",
+        "example": "node examples/node-example.js"
     },
     "repository": {
         "type": "git",
@@ -13,16 +34,20 @@
     },
     "keywords": [
         "logger",
-        "jslogger",
+        "jslogger", 
         "color",
-        "color logs",
+        "color-logs",
         "colorful",
         "console",
-        "download",
-        "download logs",
+        "browser-logger",
+        "download-logs",
         "browser",
         "log",
-        "logs"
+        "logs",
+        "javascript-logger",
+        "frontend-logging",
+        "debug",
+        "typescript"
     ],
     "author": "Suhaib A. Janjua <suhaib.janjua@gmail.com> (http://www.suhaibjanjua.com/)",
     "license": "MIT",
@@ -30,10 +55,31 @@
         "url": "https://github.com/suhaibjanjua/colorjslogger/issues"
     },
     "homepage": "https://github.com/suhaibjanjua/colorjslogger#readme",
+    "engines": {
+        "node": ">=12.0.0"
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions",
+        "not dead",
+        "not ie 11"
+    ],
     "devDependencies": {
-        "babel-cli": "^6.26.0",
-        "babel-preset-env": "^1.7.0",
-        "uglify-js": "^3.17.4"
+        "@babel/core": "^7.23.0",
+        "@babel/preset-env": "^7.23.0",
+        "@rollup/plugin-babel": "^6.0.4",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-terser": "^0.4.4",
+        "@types/jest": "^29.5.5",
+        "eslint": "^8.50.0",
+        "eslint-config-prettier": "^9.0.0",
+        "eslint-plugin-prettier": "^5.0.0",
+        "jest": "^29.7.0",
+        "jest-environment-jsdom": "^29.7.0",
+        "prettier": "^3.0.3",
+        "rimraf": "^5.0.5",
+        "rollup": "^3.29.4",
+        "typescript": "^5.2.2"
     },
     "dependencies": {}
 }

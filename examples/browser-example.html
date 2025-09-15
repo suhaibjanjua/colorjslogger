@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ColorJSLogger Browser Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .example-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005a87;
+        }
+        .console-info {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>ColorJSLogger Browser Example</h1>
+    
+    <div class="console-info">
+        <strong>📝 Note:</strong> Open your browser's Developer Console (F12) to see the colorful log output!
+    </div>
+
+    <div class="example-section">
+        <h2>Basic Logging</h2>
+        <button onclick="testBasicLogging()">Test Basic Logging</button>
+        <p>Demonstrates info, success, warning, and error logging.</p>
+    </div>
+
+    <div class="example-section">
+        <h2>Debug Mode</h2>
+        <button onclick="testDebugMode()">Test Debug Mode</button>
+        <p>Shows how debug messages behave in normal vs verbose mode.</p>
+    </div>
+
+    <div class="example-section">
+        <h2>Application Name</h2>
+        <button onclick="testAppName()">Test App Name</button>
+        <p>Demonstrates changing the application name prefix.</p>
+    </div>
+
+    <div class="example-section">
+        <h2>Internal Logging</h2>
+        <button onclick="testInternalLogging()">Test Internal Logging</button>
+        <p>Shows internal logging (stored but not displayed in console).</p>
+    </div>
+
+    <div class="example-section">
+        <h2>Download Logs</h2>
+        <button onclick="testDownloadLogs()">Download Logs</button>
+        <p>Downloads all stored logs as a text file.</p>
+    </div>
+
+    <div class="example-section">
+        <h2>Library Info</h2>
+        <button onclick="showLibraryInfo()">Show Library Info</button>
+        <p>Displays version and about information.</p>
+    </div>
+
+    <!-- Load ColorJSLogger -->
+    <script src="../dist/jslogger.min.js"></script>
+    
+    <script>
+        // Initialize logger
+        const logger = window.ColorJSLogger || window.jslogger;
+        logger.setAppName('BrowserExample');
+
+        function testBasicLogging() {
+            logger.info('UserAction', 'User clicked basic logging test');
+            logger.success('Operation', 'Data loaded successfully');
+            logger.warning('Performance', 'Page load time is above threshold');
+            logger.error('Network', 'Failed to fetch user data');
+        }
+
+        function testDebugMode() {
+            logger.debug('Debug', 'This debug message is stored but not shown');
+            
+            logger.setLevelToVerbose(true);
+            logger.debug('Debug', 'This debug message is now visible!');
+            
+            logger.setLevelToVerbose(false);
+            logger.info('Settings', 'Debug mode turned off');
+        }
+
+        function testAppName() {
+            logger.setAppName('MyAwesomeApp');
+            logger.info('Branding', 'Application name changed to MyAwesomeApp');
+            
+            logger.setAppName('BrowserExample');
+            logger.info('Branding', 'Application name restored to BrowserExample');
+        }
+
+        function testInternalLogging() {
+            logger.internal('Security', 'User authentication token refreshed');
+            logger.internal('Analytics', 'Page view tracked with sensitive data');
+            logger.info('Internal', 'Added some internal logs (check downloaded logs to see them)');
+        }
+
+        function testDownloadLogs() {
+            logger.info('Download', 'Preparing to download logs...');
+            setTimeout(() => {
+                logger.downloadLogs('colorjslogger-demo.log');
+            }, 500);
+        }
+
+        function showLibraryInfo() {
+            logger.info('Version', `ColorJSLogger v${logger.version()}`);
+            logger.info('About', logger.about());
+        }
+
+        // Log initial message
+        logger.info('PageLoad', 'Browser example page loaded successfully');
+    </script>
+</body>
+</html>
