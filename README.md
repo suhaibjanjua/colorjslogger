@@ -214,26 +214,6 @@ The demo showcases:
 
 Click the link above to test ColorJSLogger directly in your browser. Open your browser's developer console to see the colorful logs in action!
 
-## 🚀 Releases and Publishing
-
-This project includes automated workflows for creating releases and publishing to NPM:
-
-- **Automated Release**: When `package.json` version changes, GitHub Actions automatically creates tags, releases, and publishes to NPM
-- **Manual Release**: Use GitHub Actions workflows to create specific version releases
-- **Missing Releases**: Bulk create all missing releases from CHANGELOG.md
-
-For details, see [Release Workflows Documentation](.github/RELEASE_WORKFLOWS.md).
-
-### Quick Commands
-
-```bash
-# Check for missing releases
-./scripts/check-missing-releases.sh
-
-# Build and test
-npm run build && npm test
-```
-
 ## 🤝 Contributing
 
 If you want to contribute, please read our [Contributing Guidelines](CONTRIBUTING.md).

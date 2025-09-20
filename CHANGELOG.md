@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [4.0.2] - 2025-09-20
+
+### Added
+- Live browser console area to the demo page, showing all browser console logs in real time.
+- Color support for custom logs in the live console area, matching browser console output.
+- Labeled separators in the live console area for each demo action (e.g., DEBUG MODE, APPLICATION NAME).
+
+### Changed
+- Renamed all variable references from `ColorJSLogger` to `JSLogger` in the Node.js example.
+- Updated package version to 4.0.2.
+
+### Fixed
+- Live console area now always scrolls to the bottom when new logs or separators are added.
+
+### Removed
+- The "Releases and Publishing" section from the README for clarity.
+- Old `node-example.js` in favor of the updated `node-demo.js`.
+
+---
+
 ## [4.0.1] - 2025-01-01
 
 ### 📚 Documentation

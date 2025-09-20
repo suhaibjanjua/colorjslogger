@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ColorJSLogger Demo</title>
     <style>
+        /* Console log area styles */
+        #browser-console-area {
+            position: fixed;
+            top: 100px;
+            right: 0;
+            width: 400px;
+            min-height: 200px;
+            max-height: 80vh;
+            background: #fff;
+            color: #222;
+            border-left: 2px solid #eee;
+            box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+            padding: 12px 10px 12px 16px;
+            overflow-y: auto;
+            z-index: 1000;
+            font-size: 14px;
+            font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+        }
+        #browser-console-area h3 {
+            margin-top: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #007cba;
+        }
+        #browser-console-output {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 800px;
@@ -39,6 +67,10 @@
     </style>
 </head>
 <body>
+    <div id="browser-console-area">
+        <h3>Browser Console Output</h3>
+        <div id="browser-console-output"></div>
+    </div>
     <h1>ColorJSLogger Browser Example</h1>
     
     <div class="console-info">
@@ -85,11 +117,82 @@
     <script src="../dist/jslogger.min.js"></script>
     
     <script>
+        // --- Browser Console Area Logic ---
+        (function() {
+            const outputDiv = document.getElementById('browser-console-output');
+            function scrollConsoleToBottom() {
+                setTimeout(() => {
+                    outputDiv.scrollTop = outputDiv.scrollHeight;
+                }, 0);
+            }
+            function appendToConsoleArea(type, args) {
+                let msg = Array.from(args).map(a => {
+                    if (typeof a === 'object') {
+                        try { return JSON.stringify(a, null, 2); } catch { return '[object]'; }
+                    }
+                    return String(a);
+                }).join(' ');
+                // Remove [log], [info], etc. and %c from the start if present
+                msg = msg.replace(/^\[\w+\]\s*/, '').replace(/^%c\s*/, '');
+                let colorMatch = msg.match(/color:([#a-zA-Z0-9]+)/);
+                let color = null;
+                if (colorMatch) {
+                    color = colorMatch[1];
+                    msg = msg.replace(/color:[#a-zA-Z0-9]+/, '').trim();
+                }
+                const el = document.createElement('div');
+                el.textContent = msg;
+                el.style.marginBottom = '2px';
+                if (color) {
+                    el.style.color = color;
+                } else if (type === 'error') el.style.color = '#c00';
+                else if (type === 'warn' || type === 'warning') el.style.color = '#e6a700';
+                else if (type === 'info') el.style.color = '#007cba';
+                else if (type === 'debug') el.style.color = '#888';
+                outputDiv.appendChild(el);
+                scrollConsoleToBottom();
+            }
+
+            // Add a function to insert a labeled separator
+            window.addConsoleSeparator = function(label) {
+                const sep = document.createElement('div');
+                sep.textContent = `---------- ${label} ----------`;
+                sep.style.color = '#888';
+                sep.style.fontWeight = 'bold';
+                sep.style.margin = '10px 0 4px 0';
+                outputDiv.appendChild(sep);
+                scrollConsoleToBottom();
+            }
+            const orig = {
+                log: console.log,
+                info: console.info,
+                warn: console.warn,
+                error: console.error,
+                debug: console.debug
+            };
+            ['log','info','warn','error','debug'].forEach(type => {
+                console[type] = function(...args) {
+                    appendToConsoleArea(type, args);
+                    orig[type].apply(console, args);
+                };
+            });
+        })();
         // Initialize logger
         const logger = window.ColorJSLogger || window.jslogger;
         logger.setAppName('BrowserExample');
 
+        function showConsoleLogs() {
+            const logs = logger.getLogs();
+            const output = document.getElementById('console-logs-output');
+            if (Array.isArray(logs) && logs.length > 0) {
+                output.textContent = logs.map(l => typeof l === 'string' ? l : JSON.stringify(l)).join('\n');
+            } else {
+                output.textContent = 'No logs available.';
+            }
+        }
+
         function testBasicLogging() {
+            addConsoleSeparator('BASIC LOGGING');
             logger.info('UserAction', 'User clicked basic logging test');
             logger.success('Operation', 'Data loaded successfully');
             logger.warning('Performance', 'Page load time is above threshold');
@@ -97,6 +200,7 @@
         }
 
         function testDebugMode() {
+            addConsoleSeparator('DEBUG MODE');
             logger.debug('Debug', 'This debug message is stored but not shown');
             
             logger.setLevelToVerbose(true);
@@ -107,6 +211,7 @@
         }
 
         function testAppName() {
+            addConsoleSeparator('APPLICATION NAME');
             logger.setAppName('MyAwesomeApp');
             logger.info('Branding', 'Application name changed to MyAwesomeApp');
             
@@ -115,12 +220,14 @@
         }
 
         function testInternalLogging() {
+            addConsoleSeparator('INTERNAL LOGGING');
             logger.internal('Security', 'User authentication token refreshed');
             logger.internal('Analytics', 'Page view tracked with sensitive data');
             logger.info('Internal', 'Added some internal logs (check downloaded logs to see them)');
         }
 
         function testDownloadLogs() {
+            addConsoleSeparator('DOWNLOAD LOGS');
             logger.info('Download', 'Preparing to download logs...');
             setTimeout(() => {
                 logger.downloadLogs('colorjslogger-demo.log');
@@ -128,6 +235,7 @@
         }
 
         function showLibraryInfo() {
+            addConsoleSeparator('LIBRARY INFO');
             logger.info('Version', `ColorJSLogger v${logger.version()}`);
             logger.info('About', logger.about());
         }

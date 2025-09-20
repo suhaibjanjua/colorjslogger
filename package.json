@@ -1,6 +1,6 @@
 {
     "name": "colorjslogger",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "description": "Write colorful logs in browser console with download capabilities and application-specific prefixes.",
     "main": "dist/jslogger.js",
     "browser": "dist/jslogger.umd.js",
@@ -26,7 +26,7 @@
         "format": "prettier --write \"src/**/*.js\"",
         "prepublishOnly": "npm run build",
         "pretest": "npm run lint",
-        "example": "node examples/node-example.js"
+        "demo": "node examples/node-demo.js"
     },
     "repository": {
         "type": "git",
