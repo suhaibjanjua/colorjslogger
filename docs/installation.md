@@ -37,7 +37,7 @@ You can also select a specific version:
 
 ```html
 <script type="module">
-  import jslogger from 'https://cdn.jsdelivr.net/npm/colorjslogger@3.0.1/src/jslogger.min.js';
+  import jslogger from 'https://cdn.jsdelivr.net/npm/colorjslogger@4.0.0/src/jslogger.min.js';
 
   jslogger.info('JSLOGGER', 'Imported ES6Module directly in the browser');
 </script>
