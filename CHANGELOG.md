@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Demo page now uses a visually appealing, clean, and easy-to-use design for all test actions.
 
+### Refactored
+- Moved `jslogger.min.js` to `examples/lib/` for better asset organization.
+- Updated `demo.html` to import the minified file from `lib/jslogger.min.js`.
+- Removed the old `jslogger.min.js` from the root of `examples/`.
+
 ---
 
 ## [4.0.2] - 2025-09-20
