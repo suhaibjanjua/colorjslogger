@@ -73,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error Messages**: More descriptive error messages and debugging info
 - **Cross-platform**: Better compatibility across different environments
 
-## [3.6.0] - 2024-09-30
+## [3.6.0] - 2024-11-30
 
 ### 🚀 Added
 - **Log Streaming**: Real-time log streaming capabilities
@@ -86,7 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Testing**: Enhanced test coverage and reliability
 - **Documentation**: Updated examples and use cases
 
-## [3.5.0] - 2024-06-18
+## [3.5.0] - 2024-09-18
 
 ### 🚀 Added
 - **Log Grouping**: Hierarchical log grouping and categorization
@@ -99,7 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error Handling**: Improved error boundary handling
 - **API Design**: More intuitive method signatures and parameter handling
 
-## [3.4.0] - 2024-03-25
+## [3.4.0] - 2024-07-25
 
 ### 🚀 Added
 - **Enhanced Filtering**: Advanced log filtering by multiple criteria
@@ -112,7 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Performance Monitoring**: Built-in performance tracking
 - **Documentation**: Interactive documentation with live examples
 
-## [3.3.0] - 2023-12-08
+## [3.3.0] - 2024-05-08
 
 ### 🚀 Added
 - **Log Aggregation**: Aggregate similar log messages
@@ -125,7 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error Recovery**: Improved error recovery mechanisms
 - **Code Quality**: Enhanced ESLint rules and code consistency
 
-## [3.2.0] - 2023-10-12
+## [3.2.0] - 2024-04-12
 
 ### 🚀 Added
 - **Log Categories**: Support for log categorization and tagging
@@ -138,7 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Browser Compatibility**: Better support for older browser versions
 - **Documentation**: Enhanced JSDoc comments and examples
 
-## [3.1.0] - 2023-09-28
+## [3.1.0] - 2024-03-23
 
 ### 🚀 Added
 - **Log Level Controls**: Granular log level management
@@ -184,88 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Security**: Enhanced security measures and dependency auditing
 - **CI/CD**: Improved continuous integration and deployment pipelines
 
-## [3.5.0] - 2025-06-15
-
-### 🚀 Added
-- **Log Grouping**: Ability to group related logs for better organization
-- **Custom Formatters**: Support for custom log formatting functions
-- **Batch Operations**: Bulk log operations for better performance
-- **Keyboard Shortcuts**: Configurable keyboard shortcuts for common operations
-
-### 🔧 Improved
-- **Search Performance**: Faster log searching with indexed content
-- **Export Options**: Additional export formats (JSON, CSV, XML)
-- **UI Responsiveness**: Better responsive design for various screen sizes
-
-### 🛠️ Fixed
-- **Timezone Issues**: Proper timezone handling in log timestamps
-- **Unicode Support**: Better support for unicode characters in logs
-
-## [3.4.0] - 2025-03-10
-
-### 🚀 Added
-- **Log Persistence**: Option to persist logs across browser sessions
-- **Advanced Search**: Regex and fuzzy search capabilities
-- **Log Compression**: Automatic log compression for storage efficiency
-- **Context Preservation**: Maintain log context across page reloads
-
-### 🔧 Improved
-- **Memory Management**: Better garbage collection for long-running sessions
-- **Startup Performance**: Faster initialization and reduced first-paint time
-
-### 🛠️ Fixed
-- **Download Reliability**: Improved reliability of log downloads in various browsers
-- **Color Consistency**: Fixed color rendering issues in different terminals
-
-## [3.3.0] - 2025-01-20
-
-### 🚀 Added
-- **Real-time Collaboration**: Share log sessions with team members
-- **Log Templates**: Predefined templates for common logging scenarios
-- **Integration APIs**: RESTful APIs for external tool integration
-- **Automated Reporting**: Scheduled log reports and summaries
-
-### 🔧 Improved
-- **Network Efficiency**: Reduced network overhead for remote logging
-- **Error Recovery**: Better error recovery and fallback mechanisms
-
-### 🛠️ Fixed
-- **Cross-origin Issues**: Resolved CORS issues in embedded scenarios
-- **Mobile Rendering**: Fixed rendering issues on mobile devices
-
-## [3.2.0] - 2024-10-05
-
-### 🚀 Added
-- **Log Tagging**: Ability to tag logs for better categorization
-- **Quick Filters**: One-click filters for common log types
-- **Log Statistics**: Built-in statistics and log analysis tools
-- **Notification System**: Configurable notifications for important events
-
-### 🔧 Improved
-- **Load Performance**: Faster loading of large log files
-- **User Experience**: Streamlined user interface with better workflows
-
-### 🛠️ Fixed
-- **Date Formatting**: Consistent date formatting across different locales
-- **Export Encoding**: Fixed character encoding issues in exported files
-
-## [3.1.0] - 2024-06-18
-
-### 🚀 Added
-- **Log Bookmarking**: Bookmark important log entries for quick access
-- **Custom Themes**: User-defined color themes and styling options
-- **Log Validation**: Built-in validation for log format and structure
-- **Advanced Tooltips**: Rich tooltips with contextual information
-
-### 🔧 Improved
-- **Scrolling Performance**: Optimized virtual scrolling for large datasets
-- **Accessibility**: Enhanced screen reader support and keyboard navigation
-
-### 🛠️ Fixed
-- **Text Overflow**: Proper handling of long log messages
-- **Browser Caching**: Fixed caching issues affecting log display
-
-## [3.0.5] - 2024-02-28
+## [3.0.5] - 2024-01-28
 
 ### 🛠️ Fixed
 - **Critical Security**: Patched XSS vulnerability in log message rendering
@@ -276,7 +195,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error Messages**: More descriptive error messages and stack traces
 - **Performance**: Optimized log rendering for better frame rates
 
-## [3.0.4] - 2024-01-15
+## [3.0.4] - 2023-12-15
 
 ### 🛠️ Fixed
 - **Dependency Vulnerabilities**: Updated all dependencies to secure versions
@@ -287,7 +206,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bundle Optimization**: Reduced bundle size through better compression
 - **Documentation**: Updated examples and API documentation
 
-## [3.0.3] - 2023-11-20
+## [3.0.3] - 2023-10-15
 
 ### 🛠️ Fixed
 - **Browser Compatibility**: Fixed issues with latest Chrome and Firefox versions
