@@ -17,6 +17,7 @@
         "build:umd": "rollup -c rollup.config.js",
         "build:esm": "rollup -c rollup.config.esm.js",
         "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+        "build:demo:lib": "npm run build:umd && cp dist/jslogger.min.js examples/lib/jslogger.min.js",
         "clean": "rimraf dist",
         "dev": "rollup -c rollup.config.js --watch",
         "test": "jest",
@@ -34,7 +35,7 @@
     },
     "keywords": [
         "logger",
-        "jslogger", 
+        "jslogger",
         "color",
         "color-logs",
         "colorful",
