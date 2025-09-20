@@ -1,0 +1,108 @@
+name: Release and Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 4.0.0)'
+        required: true
+        type: string
+      create_tag:
+        description: 'Create git tag'
+        required: true
+        type: boolean
+        default: true
+      create_release:
+        description: 'Create GitHub release'
+        required: true
+        type: boolean
+        default: true
+      publish_npm:
+        description: 'Publish to NPM'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Build project
+      run: npm run build
+    
+    - name: Extract changelog content
+      id: changelog
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        echo "Extracting changelog for version $VERSION"
+        
+        # Extract content between version headers
+        CHANGELOG_CONTENT=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$ d' | tail -n +2)
+        
+        # If empty, use fallback
+        if [ -z "$CHANGELOG_CONTENT" ]; then
+          CHANGELOG_CONTENT="Release version $VERSION"
+        fi
+        
+        # Save to output file to handle multiline content
+        echo "$CHANGELOG_CONTENT" > /tmp/changelog.md
+        
+        # Set output for later steps
+        echo "content<<EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG_CONTENT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Create Git Tag
+      if: github.event.inputs.create_tag == 'true'
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "v$VERSION" -m "Release version $VERSION"
+        git push origin "v$VERSION"
+    
+    - name: Create GitHub Release
+      if: github.event.inputs.create_release == 'true'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.event.inputs.version }}
+        release_name: Release v${{ github.event.inputs.version }}
+        body: ${{ steps.changelog.outputs.content }}
+        draft: false
+        prerelease: false
+    
+    - name: Update package.json version
+      if: github.event.inputs.publish_npm == 'true'
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        npm version $VERSION --no-git-tag-version
+    
+    - name: Publish to NPM
+      if: github.event.inputs.publish_npm == 'true'
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
