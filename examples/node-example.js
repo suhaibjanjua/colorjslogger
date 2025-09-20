@@ -7,44 +7,44 @@
  * Note: Some browser-specific features like downloadLogs() won't work in Node.js.
  */
 
-const ColorJSLogger = require('../dist/jslogger.js');
+const jslogger = require('../dist/jslogger.js');
 
 console.log('=== ColorJSLogger Node.js Example ===\n');
 
 // Set application name
-ColorJSLogger.setAppName('NodeJSExample');
+jslogger.setAppName('NodeJSExample');
 
 // Basic logging
-ColorJSLogger.info('Startup', 'Application is starting up...');
-ColorJSLogger.success('Database', 'Connected to database successfully');
-ColorJSLogger.warning('Cache', 'Cache is 80% full');
-ColorJSLogger.error('Network', 'Failed to connect to external API');
+jslogger.info('Startup', 'Application is starting up...');
+jslogger.success('Database', 'Connected to database successfully');
+jslogger.warning('Cache', 'Cache is 80% full');
+jslogger.error('Network', 'Failed to connect to external API');
 
 // Debug logging (not visible unless VERBOSE is true)
-ColorJSLogger.debug('Debug', 'This debug message is stored but not displayed');
+jslogger.debug('Debug', 'This debug message is stored but not displayed');
 
 // Enable verbose mode
-ColorJSLogger.setLevelToVerbose(true);
-ColorJSLogger.debug('Debug', 'This debug message is now visible!');
+jslogger.setLevelToVerbose(true);
+jslogger.debug('Debug', 'This debug message is now visible!');
 
 // Internal logging (stored but not displayed)
-ColorJSLogger.internal('Internal', 'This is an internal message');
+jslogger.internal('Internal', 'This is an internal message');
 
 // Log alias
-ColorJSLogger.log('System', 'This uses the log alias (same as info)');
+jslogger.log('System', 'This uses the log alias (same as info)');
 
 // Show version and about info
 console.log('\nLibrary Info:');
-console.log('Version:', ColorJSLogger.version());
-console.log('About:', ColorJSLogger.about());
+console.log('Version:', jslogger.version());
+console.log('About:', jslogger.about());
 
 // Show stored logs
 console.log('\n=== Stored Logs ===');
-console.log(ColorJSLogger.getLogs());
+console.log(jslogger.getLogs());
 
 // Clear logs
-ColorJSLogger.clearLogs();
+jslogger.clearLogs();
 console.log('\n=== After clearing logs ===');
-console.log('Logs length:', ColorJSLogger.getLogs().length);
+console.log('Logs length:', jslogger.getLogs().length);
 
 console.log('\n=== Example completed ===');
