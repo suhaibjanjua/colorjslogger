@@ -123,7 +123,7 @@ jobs:
             gh release create "v$VERSION" \
               --title "Release v$VERSION" \
               --notes-file /tmp/release_notes.md \
-              --target main
+              --target ${{ github.sha }}
             
             echo "✅ Created release for v$VERSION"
           fi
