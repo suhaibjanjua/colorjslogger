@@ -5,13 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ColorJSLogger Demo</title>
     <style>
+        /* Modern tile/card grid for demo sections */
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin: 32px 0 0 0;
+        }
+        .demo-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px 0 rgba(60,60,60,0.08), 0 1.5px 4px 0 rgba(60,60,60,0.04);
+            padding: 28px 22px 22px 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: box-shadow 0.2s, transform 0.2s;
+            border: 1px solid #f0f0f0;
+            position: relative;
+        }
+        .demo-card:hover {
+            box-shadow: 0 6px 24px 0 rgba(60,60,60,0.16), 0 2px 8px 0 rgba(60,60,60,0.08);
+            transform: translateY(-2px) scale(1.012);
+        }
+        .demo-card h2 {
+            font-size: 1.18rem;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            color: #1976d2;
+            letter-spacing: 0.01em;
+        }
+        .demo-card p {
+            color: #444;
+            font-size: 1rem;
+            margin: 0 0 18px 0;
+        }
+        .demo-card button {
+            align-self: flex-end;
+            margin-top: 8px;
+        }
+        @media (max-width: 600px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            #browser-console-area {
+                width: 100vw;
+                left: 0;
+                right: 0;
+                top: unset;
+                bottom: 0;
+                max-height: 40vh;
+                border-left: none;
+                border-top: 2px solid #eee;
+                border-radius: 14px 14px 0 0;
+                box-shadow: 0 -2px 12px 0 rgba(60,60,60,0.08);
+            }
+        }
         /* Console log area styles */
         #browser-console-area {
             position: fixed;
-            top: 100px;
+            top: 0px;
             right: 0;
             width: 400px;
-            min-height: 200px;
+            min-height: 100vh;
             max-height: 80vh;
             background: #fff;
             color: #222;
@@ -71,46 +127,41 @@
         <h3>Browser Console Output</h3>
         <div id="browser-console-output"></div>
     </div>
-    <h1>ColorJSLogger Browser Example</h1>
-    
-    <div class="console-info">
+    <h1 style="margin-top:32px;font-size:2.1rem;font-weight:700;letter-spacing:0.01em;color:#222;text-align:center;">ColorJSLogger Demo</h1>
+    <div class="console-info" style="margin:18px auto 0 auto;">
         <strong>📝 Note:</strong> Open your browser's Developer Console (F12) to see the colorful log output!
     </div>
-
-    <div class="example-section">
-        <h2>Basic Logging</h2>
-        <button onclick="testBasicLogging()">Test Basic Logging</button>
-        <p>Demonstrates info, success, warning, and error logging.</p>
-    </div>
-
-    <div class="example-section">
-        <h2>Debug Mode</h2>
-        <button onclick="testDebugMode()">Test Debug Mode</button>
-        <p>Shows how debug messages behave in normal vs verbose mode.</p>
-    </div>
-
-    <div class="example-section">
-        <h2>Application Name</h2>
-        <button onclick="testAppName()">Test App Name</button>
-        <p>Demonstrates changing the application name prefix.</p>
-    </div>
-
-    <div class="example-section">
-        <h2>Internal Logging</h2>
-        <button onclick="testInternalLogging()">Test Internal Logging</button>
-        <p>Shows internal logging (stored but not displayed in console).</p>
-    </div>
-
-    <div class="example-section">
-        <h2>Download Logs</h2>
-        <button onclick="testDownloadLogs()">Download Logs</button>
-        <p>Downloads all stored logs as a text file.</p>
-    </div>
-
-    <div class="example-section">
-        <h2>Library Info</h2>
-        <button onclick="showLibraryInfo()">Show Library Info</button>
-        <p>Displays version and about information.</p>
+    <div class="demo-grid">
+        <div class="demo-card">
+            <h2>Basic Logging</h2>
+            <p>Demonstrates info, success, warning, and error logging.</p>
+            <button onclick="testBasicLogging()">Test Basic Logging</button>
+        </div>
+        <div class="demo-card">
+            <h2>Debug Mode</h2>
+            <p>Shows how debug messages behave in normal vs verbose mode.</p>
+            <button onclick="testDebugMode()">Test Debug Mode</button>
+        </div>
+        <div class="demo-card">
+            <h2>Application Name</h2>
+            <p>Demonstrates changing the application name prefix.</p>
+            <button onclick="testAppName()">Test App Name</button>
+        </div>
+        <div class="demo-card">
+            <h2>Internal Logging</h2>
+            <p>Shows internal logging (stored but not displayed in console).</p>
+            <button onclick="testInternalLogging()">Test Internal Logging</button>
+        </div>
+        <div class="demo-card">
+            <h2>Download Logs</h2>
+            <p>Downloads all stored logs as a text file.</p>
+            <button onclick="testDownloadLogs()">Download Logs</button>
+        </div>
+        <div class="demo-card">
+            <h2>Library Info</h2>
+            <p>Displays version and about information.</p>
+            <button onclick="showLibraryInfo()">Show Library Info</button>
+        </div>
     </div>
 
     <!-- Load ColorJSLogger -->
