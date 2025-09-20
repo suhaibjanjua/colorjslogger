@@ -20,6 +20,8 @@
 - [🛠️ Tech Stack & Architecture](#️-tech-stack--architecture)
 - [🚀 Getting Started](#-getting-started)
 - [🔧 Usage](#-usage)
+- [🎮 Demo](#-demo)
+- [🚀 Releases and Publishing](#-releases-and-publishing)
 - [🤝 Contributing](#-contributing)
 - [📝 License](#-license)
 
@@ -197,6 +199,21 @@ jslogger.internal("User token: abc-xyz-123", { userId: 456 });
 
 For more comprehensive examples and advanced configurations, please refer to the `docs/example.md` and `docs/usage.md` files within the repository.
 
+## 🎮 Demo
+
+Experience ColorJSLogger in action! Try our interactive demo to see all the features working in real-time:
+
+**[🚀 Live Demo](https://suhaibjanjua.github.io/colorjslogger/examples/demo.html)**
+
+The demo showcases:
+- ✨ Colorful logging with different log levels
+- 📱 Browser console integration  
+- 💾 Log download functionality
+- 🎯 Custom app naming
+- 🔧 Internal logging capabilities
+
+Click the link above to test ColorJSLogger directly in your browser. Open your browser's developer console to see the colorful logs in action!
+
 ## 🚀 Releases and Publishing
 
 This project includes automated workflows for creating releases and publishing to NPM:
@@ -219,20 +236,7 @@ npm run build && npm test
 
 ## 🤝 Contributing
 
-We welcome contributions to ColorJSLogger! If you have suggestions, bug reports, or want to contribute code, please follow these steps:
-
-1.  **Fork** the repository.
-2.  **Clone** your forked repository: `git clone https://github.com/YOUR_USERNAME/colorjslogger.git`
-3.  **Create a new branch** for your feature or bug fix: `git checkout -b feature/your-feature-name` or `git checkout -b bugfix/issue-description`
-4.  **Make your changes**, ensuring they adhere to the project's coding style and best practices.
-5.  **Test your changes** thoroughly.
-6.  **Commit your changes** with a clear and descriptive message.
-7.  **Push your branch** to your forked repository: `git push origin feature/your-feature-name`
-8.  **Open a Pull Request** against the `main` branch of the original repository.
-
-Please ensure your pull requests are well-described and include any relevant documentation updates.
-
-For more details, see [Contributing Guidelines](CONTRIBUTING.md).
+If you want to contribute, please read our [Contributing Guidelines](CONTRIBUTING.md).
 
 ## 📝 License
 

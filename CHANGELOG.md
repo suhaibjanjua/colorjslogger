@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [4.0.1] - 2025-01-01
+
+### 📚 Documentation
+- **README**: Streamlined Contributing section and added reference to CONTRIBUTING.md
+- **Demo**: Renamed browser-example.html to demo.html for better clarity
+- **Demo**: Added dedicated Demo section in README with live demo link
+- **Repository**: Improved documentation organization and accessibility
+
+### 🔧 Improved
+- **Examples**: Enhanced demo file naming and presentation
+- **Navigation**: Updated table of contents to include Demo section
+
+---
+
 ## [4.0.0] - 2025-09-20
 
 ### 🚀 Added
