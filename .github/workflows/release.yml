@@ -80,8 +80,18 @@ jobs:
         VERSION="${{ github.event.inputs.version }}"
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag -a "v$VERSION" -m "Release version $VERSION"
-        git push origin "v$VERSION"
+
+        # Ensure we have remote tags locally
+        git fetch --tags --prune
+
+        # If tag exists, skip; otherwise create and push
+        if git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1; then
+          echo "ℹ️ Tag v$VERSION already exists — skipping tag creation."
+        else
+          git tag -a "v$VERSION" -m "Release version $VERSION"
+          git push origin "v$VERSION"
+          echo "✅ Created and pushed tag v$VERSION"
+        fi
     
     - name: Create GitHub Release
       if: github.event.inputs.create_release == 'true'
