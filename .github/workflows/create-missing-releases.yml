@@ -1,0 +1,141 @@
+name: Create All Missing Releases
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (show what would be created without actually creating)'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  create-missing-releases:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Extract versions from CHANGELOG
+      id: versions
+      run: |
+        echo "Extracting versions from CHANGELOG.md..."
+        
+        # Extract all version numbers from CHANGELOG.md
+        VERSIONS=$(grep -oE '\[([0-9]+\.[0-9]+\.[0-9]+)\]' CHANGELOG.md | sed 's/\[\([^]]*\)\]/\1/' | sort -V)
+        
+        echo "Found versions:"
+        echo "$VERSIONS"
+        
+        # Save to output
+        echo "versions<<EOF" >> $GITHUB_OUTPUT
+        echo "$VERSIONS" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Check existing tags
+      id: existing_tags
+      run: |
+        echo "Checking existing tags..."
+        EXISTING_TAGS=$(git tag --list | sed 's/v//' | sort -V)
+        
+        echo "Existing tags:"
+        echo "$EXISTING_TAGS"
+        
+        echo "existing_tags<<EOF" >> $GITHUB_OUTPUT
+        echo "$EXISTING_TAGS" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Create missing releases
+      run: |
+        DRY_RUN="${{ github.event.inputs.dry_run }}"
+        
+        # Convert multiline outputs to arrays
+        readarray -t VERSIONS <<< "${{ steps.versions.outputs.versions }}"
+        readarray -t EXISTING_TAGS <<< "${{ steps.existing_tags.outputs.existing_tags }}"
+        
+        echo "=== Creating Missing Releases ==="
+        
+        for VERSION in "${VERSIONS[@]}"; do
+          if [[ -z "$VERSION" ]]; then
+            continue
+          fi
+          
+          # Check if tag already exists
+          TAG_EXISTS=false
+          for EXISTING in "${EXISTING_TAGS[@]}"; do
+            if [[ "$EXISTING" == "$VERSION" ]]; then
+              TAG_EXISTS=true
+              break
+            fi
+          done
+          
+          if [[ "$TAG_EXISTS" == "true" ]]; then
+            echo "✓ Tag v$VERSION already exists, skipping..."
+            continue
+          fi
+          
+          echo "📝 Processing version $VERSION..."
+          
+          # Extract changelog content for this version
+          CHANGELOG_CONTENT=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$ d' | tail -n +2 | sed '/^$/d')
+          
+          if [[ -z "$CHANGELOG_CONTENT" ]]; then
+            CHANGELOG_CONTENT="Release version $VERSION - See CHANGELOG.md for details"
+          fi
+          
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "🔍 DRY RUN - Would create:"
+            echo "  - Tag: v$VERSION"
+            echo "  - Release: Release v$VERSION"
+            echo "  - Changelog preview:"
+            echo "$CHANGELOG_CONTENT" | head -5
+            echo "  ..."
+            echo ""
+          else
+            echo "🚀 Creating tag and release for v$VERSION..."
+            
+            # Configure git
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            
+            # Create and push tag
+            git tag -a "v$VERSION" -m "Release version $VERSION"
+            git push origin "v$VERSION"
+            
+            # Create GitHub release using gh CLI
+            echo "$CHANGELOG_CONTENT" > /tmp/release_notes.md
+            gh release create "v$VERSION" \
+              --title "Release v$VERSION" \
+              --notes-file /tmp/release_notes.md \
+              --target main
+            
+            echo "✅ Created release for v$VERSION"
+          fi
+        done
+        
+        echo ""
+        echo "=== Summary ==="
+        if [[ "$DRY_RUN" == "true" ]]; then
+          echo "🔍 This was a dry run. No actual releases were created."
+          echo "📋 To create the releases, run this workflow again with dry_run=false"
+        else
+          echo "✅ All missing releases have been created!"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

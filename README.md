@@ -197,6 +197,26 @@ jslogger.internal("User token: abc-xyz-123", { userId: 456 });
 
 For more comprehensive examples and advanced configurations, please refer to the `docs/example.md` and `docs/usage.md` files within the repository.
 
+## 🚀 Releases and Publishing
+
+This project includes automated workflows for creating releases and publishing to NPM:
+
+- **Automated Release**: When `package.json` version changes, GitHub Actions automatically creates tags, releases, and publishes to NPM
+- **Manual Release**: Use GitHub Actions workflows to create specific version releases
+- **Missing Releases**: Bulk create all missing releases from CHANGELOG.md
+
+For details, see [Release Workflows Documentation](.github/RELEASE_WORKFLOWS.md).
+
+### Quick Commands
+
+```bash
+# Check for missing releases
+./scripts/check-missing-releases.sh
+
+# Build and test
+npm run build && npm test
+```
+
 ## 🤝 Contributing
 
 We welcome contributions to ColorJSLogger! If you have suggestions, bug reports, or want to contribute code, please follow these steps:
@@ -211,6 +231,8 @@ We welcome contributions to ColorJSLogger! If you have suggestions, bug reports,
 8.  **Open a Pull Request** against the `main` branch of the original repository.
 
 Please ensure your pull requests are well-described and include any relevant documentation updates.
+
+For more details, see [Contributing Guidelines](CONTRIBUTING.md).
 
 ## 📝 License
 
