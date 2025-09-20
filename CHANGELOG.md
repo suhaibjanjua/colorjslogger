@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [4.0.3] - 2025-09-20
+
+### Added
+- Modern, elegant tile-based layout for the demo page, inspired by Material UI.
+- Responsive grid and card styles for all sample test sections in demo.html.
+
+### Changed
+- Demo page now uses a visually appealing, clean, and easy-to-use design for all test actions.
+
+---
+
 ## [4.0.2] - 2025-09-20
 
 ### Added
