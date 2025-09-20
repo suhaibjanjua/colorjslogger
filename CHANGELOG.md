@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [4.0.4] - 2025-09-21
+
+### Added
+- New `build:demo:lib` npm script in `package.json` to build and copy `jslogger.min.js` directly to `examples/lib/` for demo usage.
+- Updated package version to 4.0.4.
+
+
 ## [4.0.3] - 2025-09-20
 
 ### Added
