@@ -1,4 +1,10 @@
-node_modules
+node_modules/
+dist/
+coverage/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 #OS junk files
 [Tt]humbs.db
@@ -20,7 +26,6 @@ node_modules
 *.bak
 *.[Cc]ache
 *.ilk
-*.log
 *.lib
 *.sbr
 *.sdf
@@ -43,3 +48,25 @@ _ReSharper*/
 
 #Subversion files
 .svn
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Jest coverage
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
