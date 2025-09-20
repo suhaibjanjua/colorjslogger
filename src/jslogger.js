@@ -185,7 +185,7 @@ const ColorJSLogger = {
    * @returns {string} Version string
    */
   version() {
-    return '3.0.2';
+    return '4.0.0';
   },
 
   /**
@@ -193,7 +193,7 @@ const ColorJSLogger = {
    * @returns {string} About information
    */
   about() {
-    return 'Website: https://github.com/suhaibjanjua/colorjslogger \n Copyright: (c) 2019-2023 Suhaib Janjua';
+    return 'Website: https://github.com/suhaibjanjua/colorjslogger \n Copyright: (c) 2019-2024 Suhaib Janjua';
   },
 
   /**

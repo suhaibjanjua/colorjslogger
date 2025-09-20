@@ -1,6 +1,6 @@
 {
     "name": "colorjslogger",
-    "version": "3.0.2",
+    "version": "4.0.0",
     "description": "Write colorful logs in browser console with download capabilities and application-specific prefixes.",
     "main": "dist/jslogger.js",
     "browser": "dist/jslogger.umd.js",
