@@ -30,7 +30,7 @@ If you discover a security vulnerability in ColorJSLogger, please report it resp
 ## Scope
 
 This security policy applies to:
-- The main ColorJSLogger library code
+- The main/master ColorJSLogger library code
 - Build and distribution processes
 - Documentation that could affect security
 
