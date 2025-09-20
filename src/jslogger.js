@@ -24,9 +24,9 @@ const utc = (now) =>
   ('0' + now.getSeconds()).slice(-2);
 
 /**
- * ColorJSLogger - A colorful console logger with download capabilities
+ * jslogger - A colorful console logger with download capabilities
  */
-const ColorJSLogger = {
+const jslogger = {
   /**
    * Enable/disable verbose logging
    * @type {boolean}
@@ -37,7 +37,7 @@ const ColorJSLogger = {
    * Application name prefix for logs
    * @type {string}
    */
-  appName: 'ColorJSLogger',
+  appName: 'JSLogger',
 
   /**
    * Internal log storage for download functionality
@@ -145,7 +145,7 @@ const ColorJSLogger = {
     // Check if we're in a browser environment
     if (typeof document === 'undefined') {
       console.warn(
-        'ColorJSLogger: downloadLogs() is only available in browser environments'
+        'jslogger: downloadLogs() is only available in browser environments'
       );
       return;
     }
@@ -176,7 +176,7 @@ const ColorJSLogger = {
     if (typeof name === 'string' && name.trim()) {
       this.appName = name.trim();
     } else {
-      console.warn('ColorJSLogger: Invalid app name provided');
+      console.warn('jslogger: Invalid app name provided');
     }
   },
 
@@ -231,8 +231,8 @@ try {
         navigator.userAgent.match(/rv 11/)
       ))
   ) {
-    ColorJSLogger.useIE11 = true;
-    ColorJSLogger.warning(
+    jslogger.useIE11 = true;
+    jslogger.warning(
       'Initialize',
       'Internet Explorer 11 detected. Some features may not work as expected. Consider upgrading to a modern browser.'
     );
@@ -240,20 +240,20 @@ try {
 } catch (err) {
   // Silently handle environments where navigator is not available
   if (typeof console !== 'undefined' && console.warn) {
-    console.warn('ColorJSLogger: Could not detect browser environment', err);
+    console.warn('jslogger: Could not detect browser environment', err);
   }
 }
 
 // Export for different module systems
 if (typeof module !== 'undefined' && module.exports) {
   // CommonJS
-  module.exports = ColorJSLogger;
+  module.exports = jslogger;
 } else if (typeof window !== 'undefined') {
   // Browser global
-  window.ColorJSLogger = ColorJSLogger;
+  window.ColorJSLogger = jslogger;
   // Also make it available as the old name for backward compatibility
-  window.jslogger = ColorJSLogger;
+  window.jslogger = jslogger;
 }
 
 // ES module export (will be handled by build tools)
-export default ColorJSLogger;
+export default jslogger;
