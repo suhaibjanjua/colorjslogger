@@ -144,11 +144,13 @@ allow-list, by contrast, is whole-key — an allow-list must not silently widen.
 ## Build & release
 
 - **Bundler is Rollup 3**, not UglifyJS. Minification is `@rollup/plugin-terser`.
-- `rollup.config.js` → UMD, two outputs: `dist/jslogger.js` and `dist/jslogger.min.js`
-  (terser). Both `name: 'ColorJSLogger'`, `exports: 'default'`.
-- `rollup.config.esm.js` → `dist/jslogger.esm.js`, `format: 'es'`, `modules: false` in
-  preset-env so ESM survives. Otherwise identical to the UMD config.
-- `npm run build` = `clean` → `build:umd` → `build:esm` → `build:types`.
+- **One config, three outputs** ([rollup.config.js](rollup.config.js)):
+  `dist/jslogger.js` and `dist/jslogger.min.js` (UMD, `name: 'ColorJSLogger'`,
+  `exports: 'default'`, the min one via terser), and `dist/jslogger.esm.js` (`es`).
+  `rollup.config.esm.js` was merged into it in v5 — it differed only by
+  `modules: false`, itself redundant because @rollup/plugin-babel already tells
+  preset-env that static ESM is supported.
+- `npm run build` = `clean` → `build:bundles` → `build:types`.
 - **`build:types` copies `src/index.d.ts` → `dist/index.d.ts`.** It does not run tsc.
   tsc *cannot* emit here: tsconfig has no `allowJs` and `src/` has no `.ts` source, so
   `--emitDeclarationOnly` walked zero files and exited 0 having written nothing — which
@@ -160,9 +162,13 @@ allow-list, by contrast, is whole-key — an allow-list must not silently widen.
 - Jest: `testEnvironment: 'node'` by default; `download.test.js` opts into jsdom via a
   `@jest-environment jsdom` docblock.
 - CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs lint/test/build on
-  Node 16/18/20, then auto-tags, auto-releases, and **auto-publishes to npm on any push
+  Node 18/20/22, then auto-tags, auto-releases, and **auto-publishes to npm on any push
   to master where package.json's version line changed**. Bumping the version and
   pushing *is* a release. Treat version bumps as live ammunition.
+- **Node 16 cannot build this project** — a transitive dep needs the global `crypto`
+  added in Node 18. It was in the matrix until v5, so every CI run failed from April
+  2026 until then, and every dependabot PR inherited a red check. `engines` says >=18.
+- Jest enforces coverage thresholds (88% statements / 80% branches / 100% functions).
 
 ## Security invariants
 
@@ -221,14 +227,23 @@ Stated in the README's Security section; keep them there and keep them honest.
 
 Open, as of 2026-07-17:
 
-1. `version()` is hardcoded and can drift from package.json. It has drifted before
-   (returned `4.0.0` while the package was `4.0.4`). No test pins them together.
+1. `version()` is hardcoded and must be bumped by hand alongside package.json. It has
+   drifted before (returned `4.0.0` while the package was `4.0.4`).
+   `robustness.test.js` now pins them together, so drift fails the build — but the
+   bump is still manual.
 2. The runtime `module.exports`/`window` sniff at the bottom of `src/jslogger.js` is
    baked into the ESM bundle too, where it is dead weight and a bundler smell.
-3. The IE11 sniff runs at module load and calls `warning()` — a side effect on import,
-   despite `browserslist` saying `not ie 11`. Probably deletable.
-4. `jest.config.js` `collectCoverageFrom` has no thresholds, so coverage can regress
-   silently.
+   Left alone in v5 because removing it would drop the `window.jslogger` legacy alias.
+3. The IE11 sniff runs at module load and calls `warning()` — a side effect on import
+   that writes an entry to the buffer before the consumer has configured anything,
+   despite `browserslist` saying `not ie 11`. Probably deletable; left for the author.
+4. Three dependabot PRs (#18 js-yaml, #19 babel/plugin-transform-modules-systemjs,
+   #20 babel/core) are open against **devDependencies only**. The package has zero
+   runtime dependencies, so none of them reach consumers. Their red checks were the
+   Node 16 build failure, not the bumps; they should go green on a rebase now.
+5. `redact.js` is bundled into the published output but is not part of the public
+   API. Its functions are exported for the logger's use and for tests; treat them as
+   internal.
 
 ## Session log
 
@@ -247,5 +262,12 @@ Open, as of 2026-07-17:
 - **2026-07-17 — Phase 3** — README rewritten from verified source. Every example
   executed against a packed tarball first; two drafted claims were wrong (`grant_type`
   is a key not a value; overlapping layers double-marked) and were fixed — the second
-  by collapsing adjacent markers in `scrubString()`.
+  by collapsing adjacent markers in `scrubString()`. docs/ updated to match.
+- **2026-07-17 — Phase 4** — Housekeeping. Found and fixed a **ReDoS in the key-shape
+  pattern** (quadratic on separator-free input: 40KB took 3.4s, now 14ms) while
+  writing the tests to back SECURITY.md's claims — the bound on the key length is
+  load-bearing, do not remove it. Discovered CI had been red on master since April
+  2026 (Node 16 cannot build); fixed the matrix and `engines`. Rewrote SECURITY.md
+  around the capture-time invariant. Consolidated the rollup configs. Added coverage
+  thresholds. Tests 16 → 100, coverage 70% → 90.5%.
 </content>
