@@ -7,6 +7,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [5.0.0] - 2026-07-17
+
+Security release. Sensitive values are now redacted **before** they enter the
+log buffer. Prior versions performed no redaction at all: `internal()` only
+suppressed console output while writing the raw message to the buffer, so
+`downloadLogs()` exported plaintext secrets.
+
+### Security
+- **Redact at capture.** All log methods now route through a single choke point
+  that composes, redacts, and only then buffers the entry. The buffer, console
+  and `downloadLogs()` all observe the same redacted string. No raw sensitive
+  value is retained after a log call returns.
+- **Two-layer redaction, on by default.** Key-based redaction for object
+  payloads (recursive, non-mutating, circular-safe), plus a scan of the composed
+  line catching `token=…`/`password: …` key shapes and `Bearer`/`Basic`/bare-JWT
+  value shapes. Default deny-list: `authorization`, `x-rainbow-app-auth`,
+  `x-rainbow-api-key`, `pass`/`password`, `token`, `secret`, `code`.
+- **Whitelist mode** (`setRedactionMode('whitelist')` + `setAllowedKeys()`) for
+  consumers who want only approved keys to survive.
+- Fixed a leak where `debug()` bypassed the shared log path entirely when
+  `VERBOSE` was false, so its entries reached the buffer unprocessed.
+- Fixed quadratic backtracking (ReDoS) in the key-shape pattern; a 40KB
+  separator-free message took 3.4s to scan and now takes 14ms.
+- `SECURITY.md` rewritten with a disclosure process, the capture-time
+  guarantee, and an explicit statement of what redaction cannot catch.
+
+### Added
+- `setMaxEntries(n)`, `getMaxEntries()`, `getEntryCount()`.
+- `addRedactedKeys(keys)`, `setRedactionMode(mode)`, `setAllowedKeys(keys)`,
+  `resetRedaction()`.
+- Object payloads: log methods now accept an object as `message` and redact it
+  by key before serialising. The `(process, message)` string signature is
+  unchanged.
+- TypeScript definitions now actually ship (see Fixed), covering the full API.
+- `exports` map with `types`/`import`/`require` conditions.
+
+### Changed
+- **BREAKING: the log buffer is bounded.** It is now a ring buffer capped at
+  2000 entries, evicting oldest first, where it previously grew without limit
+  for the page lifetime. `downloadLogs()` exports exactly the retained window,
+  so a session logging more than 2000 entries will export fewer than before.
+- **BREAKING: logged output is redacted.** Any consumer parsing its own logs
+  should expect `[REDACTED]` where a deny-listed key or credential shape
+  appears.
+- **BREAKING: `objLogs` is no longer a plain string property.** It is a
+  deprecated accessor: reads return the retained window, `objLogs = ''` still
+  clears, any other write warns and is ignored. Use `getLogs()` / `clearLogs()`.
+- **BREAKING: `engines` now requires Node >= 18** (was `>=12`). Node 16 could
+  not build the project at all — a transitive dependency needs the global
+  `crypto` added in Node 18 — and every CI run had failed on it since April.
+- **BREAKING: the `browser` package field was removed.** It pointed at
+  `dist/jslogger.umd.js`, a file no build has ever produced. `main` is a
+  browser-safe UMD bundle; bundlers should use `module`/`exports`.
+- The two rollup configs are consolidated into one with three outputs.
+- CI matrix is now Node 18/20/22.
+
+### Fixed
+- **Type definitions are published for the first time.** `types` pointed at
+  `dist/index.d.ts`, which `build:types` never produced: tsc cannot emit
+  declarations from a project with no `.ts` source, so it exited 0 having
+  written nothing. `build:types` now ships the hand-written `src/index.d.ts`,
+  and a test guards it against drifting from the runtime.
+- `version()` returned a hardcoded `4.0.0` while the package was `4.0.4`. It
+  now returns `5.0.0` and a test pins it to `package.json`.
+- `npm test` could not run at all on a `core.autocrlf=true` checkout: every line
+  failed prettier's `endOfLine: 'lf'` rule. Added `.gitattributes`.
+
+### Documentation
+- README rewritten from verified source. The previous one was AI-generated from
+  filenames and claimed UglifyJS (it is Rollup), a `jslogger.warn()` that does
+  not exist, single-argument log calls, a CDN path that 404s, and an "Inferred"
+  section imagining `internal()` redacted or excluded confidential logs — the
+  opposite of its behaviour. Every example in the new README was executed
+  against a packed tarball before release.
+
+### Tests
+- 16 -> 100 tests. Coverage 70% -> 90.5% statements, 100% functions, with
+  thresholds enforced in CI.
+
 ## [4.0.4] - 2025-09-21
 
 ### Added

@@ -94,9 +94,15 @@ const VALUE_SHAPE_RULES = [
  * The log line prefix is safe from this: `Mon Aug 12 2019 22:37:57 | App |
  * [Auth] :: ...` yields key `22` sep `:` value `37`, and `22` matches no deny
  * pattern, so the timestamp survives untouched.
+ *
+ * The {1,64} bound on the key is load-bearing, NOT cosmetic. Unbounded, this
+ * pattern is quadratic: the key class is unanchored, so on a long run of
+ * key-legal characters with no separator (a base64 blob, a minified payload)
+ * the engine scans to the end and backtracks from every start position. A 40KB
+ * run took 3.4s; with the bound it is ~1ms. Keep any key pattern bounded.
  */
 const KEY_SHAPE_RE =
-  /(["']?)([A-Za-z0-9_.-]+)\1(\s*[=:]\s*)(?:"([^"]*)"|'([^']*)'|([^\s,;&]+))/g;
+  /(["']?)([A-Za-z0-9_.-]{1,64})\1(\s*[=:]\s*)(?:"([^"]*)"|'([^']*)'|([^\s,;&]+))/g;
 
 /**
  * Escapes a literal string for use inside a RegExp.

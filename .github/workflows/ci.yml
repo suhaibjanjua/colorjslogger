@@ -12,7 +12,12 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        # Node 16 cannot build: a transitive dependency needs the global
+        # `crypto` that only landed in Node 18, so `npm run build` dies with
+        # 'ReferenceError: crypto is not defined'. Every CI run failed on this
+        # from April 2026 until it was dropped. Node 16 has been EOL since
+        # September 2023; package.json engines now says >=18 to match.
+        node-version: [18.x, 20.x, 22.x]
     
     steps:
     - uses: actions/checkout@v4
@@ -36,7 +41,7 @@ jobs:
       run: npm run build
     
     - name: Upload coverage to Codecov
-      if: matrix.node-version == '18.x'
+      if: matrix.node-version == '20.x'
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
