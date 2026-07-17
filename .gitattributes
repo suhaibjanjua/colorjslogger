@@ -1,0 +1,6 @@
+# Force LF in the working tree regardless of core.autocrlf.
+# prettier.config.js sets endOfLine:'lf', so a CRLF checkout makes
+# `npm run lint` (and therefore `npm test`, via pretest) fail on every line.
+* text=auto eol=lf
+*.png binary
+*.ico binary

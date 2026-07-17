@@ -35,7 +35,7 @@ describe('ColorJSLogger', () => {
     });
 
     test('should return correct version', () => {
-      expect(ColorJSLogger.version()).toBe('4.0.0');
+      expect(ColorJSLogger.version()).toBe('5.0.0');
     });
 
     test('should return correct about information', () => {
