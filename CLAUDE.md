@@ -2,10 +2,12 @@
 
 Persistent repo memory. Read this first, before the README.
 
-> **The README is not a source of truth.** It was AI-generated from filenames and
-> contains inferred/fabricated claims (UglifyJS, `jslogger.warn()`, redacting
-> `internal()`). Where README and code disagree, **the code wins**. Phase 3 of the
-> 2026-07-17 session rewrites it; until then treat it as fiction.
+> The README was rewritten from verified source on 2026-07-17, and every example in
+> it was executed against a packed tarball before it shipped. It is accurate as of
+> v5.0.0. **Keep it that way: if you change behaviour, run the README examples
+> before claiming they still hold.** The pre-v5 README was AI-generated from
+> filenames and invented UglifyJS, `jslogger.warn()` and a redacting `internal()`.
+> When in doubt, the code is the authority.
 
 ---
 
@@ -13,181 +15,237 @@ Persistent repo memory. Read this first, before the README.
 
 ColorJSLogger is a dependency-free JavaScript logging library for browsers (and
 Node, degraded). It prints CSS-coloured `console.log` output at five levels, prefixes
-every line with a configurable app name, keeps every line it has ever emitted in an
-in-memory buffer, and can hand that buffer to the user as a downloadable `.log` file.
+every line with a configurable app name, retains a bounded history in memory, and can
+hand that history to the user as a downloadable `.log` file.
 
-Everything lives in a single object literal in [src/jslogger.js](src/jslogger.js).
-~260 lines, no dependencies, no classes, no instances — it is a **singleton module
-object**. There is no `new ColorJSLogger()`.
+Since v5 it is also a **redacting** logger: every entry is scrubbed of credentials at
+capture, before it reaches the buffer. That is the property the library exists to
+guarantee — see [Security invariants](#security-invariants).
+
+Two source files, no dependencies, no classes, no instances — the export is a
+**singleton object literal**. There is no `new ColorJSLogger()`.
+
+- [src/jslogger.js](src/jslogger.js) — the logger object, buffer, and public API.
+- [src/redact.js](src/redact.js) — the redaction layer (pure functions, no state).
 
 ## Real public API
 
-Derived from [src/jslogger.js](src/jslogger.js), not the README.
+Derived from source, not the README.
 
-Every log method takes exactly **two string arguments** — `(process, message)`.
-`process` is a free-text module/function label, not a Node `process`. There is no
-varargs, no `console.log`-style object splatting.
+Every log method takes exactly **two arguments** — `(process, message)`. `process` is
+a free-text module/function label, not a Node `process`. `message` is a string or an
+object (objects are key-redacted, then JSON-serialised). There is no varargs and no
+`console.log`-style splatting.
 
-| Member | Signature | Actual behaviour |
+### Logging
+
+| Member | Signature | Behaviour |
 | --- | --- | --- |
 | `info` | `(process, message) => void` | Buffer + console, black |
 | `error` | `(process, message) => void` | Buffer + console, red |
 | `success` | `(process, message) => void` | Buffer + console, green |
 | `warning` | `(process, message) => void` | Buffer + console, orange |
 | `debug` | `(process, message) => void` | Buffer **always**; console only if `VERBOSE`, blue |
-| `internal` | `(process, message) => void` | Buffer only, **never** console. No redaction. |
+| `internal` | `(process, message) => void` | Buffer only, **never** console. Redacted like every other path. |
 | `log` | `(process, message) => void` | Alias for `info` |
-| `downloadLogs` | `(filename?) => void` | Blob-downloads the raw buffer string. Warns + no-ops if `document` is undefined |
+
+### Configuration
+
+| Member | Signature | Behaviour |
+| --- | --- | --- |
+| `setAppName` | `(name) => void` | Trims + sets; warns and keeps old value on non-string/empty |
 | `setLevelToVerbose` | `(isVerbose) => void` | `VERBOSE = Boolean(isVerbose)` |
-| `setAppName` | `(name) => void` | Trims + sets; `console.warn`s and keeps old value on non-string/empty |
-| `version` | `() => string` | **Hardcoded `'4.0.0'`** — stale, package.json says 4.0.4 |
+| `setMaxEntries` | `(n) => void` | Ring cap; rejects non-numeric/non-finite/`<= 0` with a warning; floors fractions; evicts immediately when lowered |
+| `getMaxEntries` | `() => number` | Current cap (default 2000) |
+| `getEntryCount` | `() => number` | Retained entry count |
+| `addRedactedKeys` | `(keys) => void` | Extend the deny-list; strings become case-insensitive **substring** patterns, RegExp passes through |
+| `setRedactionMode` | `('blacklist'\|'whitelist') => void` | Default `'blacklist'` |
+| `setAllowedKeys` | `(keys) => void` | Whitelist-mode allow-list; **whole-key** case-insensitive match |
+| `resetRedaction` | `() => void` | Restore built-in defaults |
+
+### Log access and metadata
+
+| Member | Signature | Behaviour |
+| --- | --- | --- |
+| `getLogs` | `() => string` | Retained window, oldest first, newline-joined + trailing `\n` |
+| `clearLogs` | `() => void` | Empties `_entries` |
+| `downloadLogs` | `(filename?) => void` | Blobs `getLogs()`. Warns + no-ops if `document` is undefined |
+| `version` | `() => string` | Hardcoded `'5.0.0'` — **must be bumped alongside package.json by hand** |
 | `about` | `() => string` | Static website/copyright string |
-| `clearLogs` | `() => void` | `objLogs = ''` |
-| `getLogs` | `() => string` | Returns the raw buffer string |
 | `VERBOSE` | `boolean` | Public mutable property, default `false` |
 | `appName` | `string` | Public mutable property, default `'ColorJSLogger'` |
-| `objLogs` | `string` | Public mutable property — **the entire log buffer** |
+| `objLogs` | `string` | **Deprecated accessor.** Getter joins the ring; setter honours only `= ''` (clears) and warns otherwise |
 | `useIE11` | `boolean?` | Only set (to `true`) when IE11 is sniffed at module load |
 
-There is **no** `warn()`, no `fatal()`, no `trace()`, no redaction API, no buffer cap,
-no log-level filtering beyond the `VERBOSE` gate on `debug`.
+There is **no** `warn()`, no `fatal()`, no `trace()`, and no log-level filtering beyond
+the `VERBOSE` gate on `debug`.
 
 ### Export shape
 
 - **Source** ends with `export default ColorJSLogger` and *also* runs a runtime
-  `module.exports` / `window.*` sniff at [src/jslogger.js:248-256](src/jslogger.js#L248-L256).
-  That sniff survives into both bundles — see Known issues.
-- **UMD** (`dist/jslogger.js`, `dist/jslogger.min.js`, `rollup.config.js`):
-  global name is **`ColorJSLogger`** via the Rollup wrapper, built with
-  `exports: 'default'` so the module *is* the logger object, not `{default: …}`.
-  In a script-tag context the inner sniff additionally sets `window.jslogger` as a
-  legacy alias. Both globals work; `ColorJSLogger` is canonical.
-- **ESM** (`dist/jslogger.esm.js`, `rollup.config.esm.js`): `export { ColorJSLogger as default }`.
-  Bundler consumers write `import jslogger from 'colorjslogger'` — **default import,
-  no braces**. There is no named export of the logger.
-- **package.json fields**: `main` → `dist/jslogger.js` (UMD, CJS-compatible),
-  `module` → `dist/jslogger.esm.js`, `browser` → `dist/jslogger.umd.js` (**broken —
-  that file is never built**), `types` → `dist/index.d.ts` (**broken — never emitted**).
-  There is **no `exports` field**, so subpath/condition resolution is unconstrained.
+  `module.exports` / `window.*` sniff. That sniff survives into both bundles.
+- **UMD** (`dist/jslogger.js`, `dist/jslogger.min.js`): global name is
+  **`ColorJSLogger`** via the Rollup wrapper, built with `exports: 'default'` so the
+  module *is* the logger object, not `{default: …}`. In a script-tag context the inner
+  sniff additionally sets `window.jslogger` as a legacy alias. Both work;
+  `ColorJSLogger` is canonical.
+- **ESM** (`dist/jslogger.esm.js`): `export { ColorJSLogger as default }`. Bundler
+  consumers write `import jslogger from 'colorjslogger'` — **default import, no
+  braces**. There is no named export of the logger.
+- **package.json**: `main` → `dist/jslogger.js` (UMD, CJS-compatible), `module` →
+  `dist/jslogger.esm.js`, `types` → `dist/index.d.ts`, plus an `exports` map with
+  types/import/require conditions and a `./dist/*` passthrough. The `browser` field
+  was **removed in v5** — it pointed at `dist/jslogger.umd.js`, which no config has
+  ever built.
 
 ## Architecture notes
 
-Single buffer, and it is a **string, not an array**:
+**One choke point.** Every entry is composed, redacted, and buffered in `_write()`
+and nowhere else. This is the whole security design; do not add a second formatter.
 
 ```
-info/error/success/warning/log ─┐
-                                ├─→ _log(process, message, level)
-debug (VERBOSE=true) ───────────┘        │
-                                         ├─→ objLogs += printLog + '\n'   ← buffer write
-                                         └─→ console.log('%c '+printLog, 'color:…')
-debug (VERBOSE=false) ──→ (inlined copy) ─→ objLogs += printLog + '\n'   ← buffer only
-internal ───────────────→ (inlined copy) ─→ objLogs += printLog + '\n'   ← buffer only
-
-getLogs()      → returns objLogs verbatim
-downloadLogs() → new Blob([objLogs]) → <a download> → click()
+info/success/warning/error/log ─┐
+debug  (level only if VERBOSE) ─┼─→ _write(process, message, level?)
+internal (no level, no console)─┘        │
+                                         ├─ _render(message)
+                                         │    └─ object? → redactValue() → JSON.stringify()
+                                         ├─ compose: `${utc} | ${appName} | [${process}] :: ${rendered}`
+                                         ├─ scrubString(line)          ← REDACTION AT CAPTURE
+                                         ├─ _entries.push(entry)       ← buffer write (redacted)
+                                         └─ level ? console.log('%c '+entry, colour) : skip
 ```
 
-- The line format is built once, in three places, as
-  `` `${utc(new Date())} | ${appName} | [${process}] :: ${message}` ``
-  ([_log:64](src/jslogger.js#L64), [internal:122](src/jslogger.js#L122),
-  [debug:135](src/jslogger.js#L135)). Three copies of the same template — any format
-  change must touch all three.
-- **`internal()` differs from `_log()` only by omitting the `console.log` call.**
-  That is the entire "confidential" path. It is console-suppression, not redaction.
-- **Redaction today: none.** There is no redaction code anywhere in `src/`. The
-  `docs/confidential-logs.md` example (`'User with email su****...com just logged in.'`)
-  shows the **caller** pre-masking the string by hand. The library never inspects,
-  filters, or transforms a message.
-- Because the buffer is a string, an object argument would stringify to
-  `[object Object]` — object payloads are not supported today.
+- `_entries` is a bounded `string[]` (oldest-first), capped by `_maxEntries`
+  (default 2000), evicting via `shift()` on overflow.
+- `getLogs()` joins the ring. `downloadLogs()` blobs `getLogs()` — it never touches
+  `_entries` directly, so it cannot diverge from the retained window.
+- `internal()` is `_write()` with no `level`, which is the only thing that suppresses
+  console output. That is its entire behaviour.
+- `objLogs` is a getter/setter kept for backward compatibility only.
+
+**Redaction** ([src/redact.js](src/redact.js)) is two independent layers, both at
+capture. It is a pure module — all policy lives in a config object owned by the logger
+(`_redaction`), so the functions are trivially testable.
+
+1. `redactValue(value, config)` — structural, key-based, for object payloads.
+   Recursive, non-mutating (returns a clone), circular-safe (`WeakSet` of the *ancestor
+   chain*; it `delete`s on the way out so shared-but-acyclic references are not
+   mislabelled `[Circular]`). Blacklist and whitelist modes.
+2. `scrubString(line, config)` — textual, over the composed line. Value-shape rules
+   (`Bearer`, `Basic`, bare JWT) run **before** key-shape rules; reversing that order
+   leaves base64 payloads exposed, because the key-shape value stops at the first
+   space. A final pass collapses adjacent `[REDACTED]` markers, which both layers
+   legitimately produce on the same span.
+
+Key matching is deliberately **substring** (`/token/i` catches `access_token`), which
+over-redacts (`/code/i` catches `zipcode`). That direction is intentional. The
+allow-list, by contrast, is whole-key — an allow-list must not silently widen.
 
 ## Build & release
 
-- **Bundler is Rollup 3**, not UglifyJS. The README's UglifyJS claim is fabricated.
-  Minification is `@rollup/plugin-terser`.
-- `rollup.config.js` → UMD, two outputs: `dist/jslogger.js` (unminified) and
-  `dist/jslogger.min.js` (terser). Both `name: 'ColorJSLogger'`, `exports: 'default'`.
-- `rollup.config.esm.js` → one output, `dist/jslogger.esm.js`, `format: 'es'`,
-  `modules: false` in preset-env so ESM survives. Otherwise **identical** to the UMD
-  config (same input, same nodeResolve, same babel targets) — the two files exist only
-  because of the `modules: false` flag and could be one config with three outputs.
+- **Bundler is Rollup 3**, not UglifyJS. Minification is `@rollup/plugin-terser`.
+- `rollup.config.js` → UMD, two outputs: `dist/jslogger.js` and `dist/jslogger.min.js`
+  (terser). Both `name: 'ColorJSLogger'`, `exports: 'default'`.
+- `rollup.config.esm.js` → `dist/jslogger.esm.js`, `format: 'es'`, `modules: false` in
+  preset-env so ESM survives. Otherwise identical to the UMD config.
 - `npm run build` = `clean` → `build:umd` → `build:esm` → `build:types`.
-- **`build:types` emits nothing.** `tsc --declaration --emitDeclarationOnly` over a
-  `tsconfig.json` with no `allowJs` and a `src/` containing zero `.ts` files produces
-  no output. `dist/index.d.ts` has never existed. `src/index.d.ts` is hand-written,
-  accurate, and **not shipped** (not in `files`, and `types` points elsewhere).
-  So: **no types reach npm consumers today**, despite the `typescript` keyword.
-- `npm test` = `pretest` (eslint) → `jest`. `jest.config.js` uses
-  `testEnvironment: 'node'`; `jest-environment-jsdom` is installed but unused, which
-  is why the `downloadLogs()` browser path is untested.
+- **`build:types` copies `src/index.d.ts` → `dist/index.d.ts`.** It does not run tsc.
+  tsc *cannot* emit here: tsconfig has no `allowJs` and `src/` has no `.ts` source, so
+  `--emitDeclarationOnly` walked zero files and exited 0 having written nothing — which
+  is why `types` pointed at a non-existent file for 22 releases. `src/index.d.ts` is
+  hand-written; [src/__tests__/types.test.js](src/__tests__/types.test.js) is the drift
+  guard that keeps it honest.
+- `npm test` = `pretest` (`lint` + `typecheck`) → `jest`. `typecheck` runs `tsc
+  --noEmit`, which is the only remaining job tsconfig.json has.
+- Jest: `testEnvironment: 'node'` by default; `download.test.js` opts into jsdom via a
+  `@jest-environment jsdom` docblock.
 - CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs lint/test/build on
-  Node 16/18/20, then auto-tags, auto-releases, and **auto-publishes to npm on any
-  push to master where `package.json`'s version line changed**. Bumping the version
-  and pushing *is* a release. Treat version bumps as live ammunition.
+  Node 16/18/20, then auto-tags, auto-releases, and **auto-publishes to npm on any push
+  to master where package.json's version line changed**. Bumping the version and
+  pushing *is* a release. Treat version bumps as live ammunition.
 
-## Known issues / security invariants
+## Security invariants
 
-### Invariants — do not regress these
+Do not regress these. They are the reason v5 exists.
 
-> **1. Secrets must be redacted BEFORE entering the log buffer — never at display
-> time. The buffer must never hold a raw sensitive value.**
-> Redaction belongs at capture, in the one place that builds the entry, before any
-> write to the buffer. `getLogs()`, `downloadLogs()`, and the console must all be
-> downstream of it and must never re-derive from an unredacted source. If a future
-> change adds a fourth path that formats an entry, it must route through the same
-> capture-time redaction.
+> **1. Secrets are redacted BEFORE entering the log buffer — never at display time.
+> The buffer must never hold a raw sensitive value.**
+> Redaction lives in `_write()`, the single place that composes an entry, and runs
+> before the `_entries.push()`. The buffer, `getLogs()`, `downloadLogs()` and the
+> console are all downstream and all observe the same redacted string. If you add a
+> code path that formats an entry, it MUST route through `_write()`.
 
 > **2. `internal()` is not a security feature.** It suppresses console output only.
-> Anything passed to it still lands in the buffer and still lands in the downloaded
-> file. Never document it as redaction.
+> Anything passed to it still enters the buffer and still appears in the download.
+> What protects it is the shared capture-time redaction. Never document it otherwise.
 
-> **3. The buffer is bounded.** It must not grow without limit for the lifetime of
-> the page.
+> **3. The buffer is bounded.** It must not grow without limit for the page lifetime.
 
-### Open defects (as of 2026-07-17 Phase 0)
+> **4. Redaction never mutates the caller's object.** Consumers log live application
+> state; corrupting it would be far worse than the logging bug being fixed.
 
-1. **No redaction exists.** Confirmed by Phase 1 trace — see session log.
-2. **Unbounded buffer.** `objLogs` is an ever-growing string; a long-lived SPA leaks
-   memory until reload. No cap, no eviction.
-3. `version()` returns a hardcoded `'4.0.0'`; package.json is `4.0.4`.
-4. `package.json` `browser` → `dist/jslogger.umd.js`, a file no config emits.
-   Bundlers honouring the `browser` field will fail to resolve.
-5. `types` → `dist/index.d.ts`, never emitted. Types do not ship.
-6. `debug()` writes to the buffer even when `VERBOSE` is false, so
-   `docs/README.md`'s "disable VERBOSE to avoid confidential logs in production"
-   is false — the logs are merely hidden from the console and still export.
-7. Local `npm run lint` fails with 438 CRLF errors: `core.autocrlf=true` on this
-   machine, index is LF, prettier is `endOfLine: 'lf'`, and there is no
-   `.gitattributes`. CI (Linux) is unaffected. Run `npx jest` to bypass `pretest`.
-8. CDN examples in `README.md` and `docs/installation.md` point at
-   `.../colorjslogger@<ver>/src/jslogger.min.js` — that path does not exist in the
-   published tarball (`files` ships `src/jslogger.js` only; the minified build is
-   `dist/jslogger.min.js`). Every CDN snippet in the repo is a 404.
-9. `SECURITY.md` claims 3.x is supported; the library is 4.x.
-10. The runtime `module.exports`/`window` sniff at [src/jslogger.js:248-256](src/jslogger.js#L248-L256)
-    is baked into the ESM bundle too, where it is dead weight and a bundler smell.
-11. Coverage is 70% stmts / 58% branch. Uncovered: the `console.log.apply` fallback,
-    the whole `downloadLogs()` browser path, the IE11 sniff, the export sniff.
+> **5. Negative cases are part of the contract.** UUIDs, git SHAs and request IDs must
+> survive. Do not add generic "long base64/hex blob" heuristics — precision over
+> recall for value shapes. Tests in `redaction.test.js` enforce this.
+
+### Documented, accepted limitations
+
+Stated in the README's Security section; keep them there and keep them honest.
+
+- Free-form prose with a bare secret (`'the password is hunter2'`) is **not** caught.
+  No key- or shape-based scheme can. This is the consumer's responsibility.
+- Opaque credentials with no key and no distinctive shape are not caught.
+- Substring key matching over-redacts by design.
+- A client-side logger is not a secure store. Buffer contents are readable by any
+  script on the page; the download is plaintext on disk.
 
 ## Conventions
 
 - Plain ES2018+ JS, single object literal, JSDoc on every public member — **keep the
-  JSDoc**, it is the only real API doc.
+  JSDoc**, it is a real part of the API docs.
 - Prettier: 2-space, single quotes, semicolons, 80 cols, LF. ESLint extends
   `eslint:recommended` + prettier; `no-console` deliberately off; `prefer-const`,
-  `no-var` enforced.
-- Tests: Jest, `src/__tests__/*.test.js`, `require()`-style import of the source
-  (CJS via babel-jest). Tests reset state by assigning `objLogs`/`appName`/`VERBOSE`
-  directly in `beforeEach` — public mutable properties are load-bearing for the suite.
-- `docs/` is a flat set of one-topic Markdown files, each mapping to one feature
-  (`set-appname.md`, `download.md`, `confidential-logs.md`, `usage.md`, `example.md`,
-  `installation.md`), plus `index.html` + `README.md` for the GitHub Pages site.
-  A new user-facing feature should get a matching `docs/*.md`.
-- Conventional commits (`feat:`, `fix:`, `docs:`, `chore:`) — see `git log`.
-- Releases are automated off the version line in `package.json`. Never bump casually.
+  `no-var` enforced. `.gitattributes` forces LF — without it, `core.autocrlf=true`
+  checkouts fail every prettier rule and `npm test` cannot run at all.
+- Tests: Jest, `src/__tests__/*.test.js`, `require()`-style import (CJS via babel-jest).
+  Security tests assert against `_entries` **directly** rather than through an
+  accessor — a display-time filter must not be able to make them pass.
+- `docs/` is a flat set of one-topic Markdown files, each mapping to one feature, plus
+  `index.html` + `README.md` for the GitHub Pages site. A new user-facing feature
+  should get a matching `docs/*.md`.
+- Conventional commits (`feat:`, `fix:`, `docs:`, `chore:`). Breaking changes get `!`
+  and a `BREAKING CHANGE:` trailer.
+- Releases are automated off the version line in package.json. Never bump casually.
+
+## Known issues
+
+Open, as of 2026-07-17:
+
+1. `version()` is hardcoded and can drift from package.json. It has drifted before
+   (returned `4.0.0` while the package was `4.0.4`). No test pins them together.
+2. The runtime `module.exports`/`window` sniff at the bottom of `src/jslogger.js` is
+   baked into the ESM bundle too, where it is dead weight and a bundler smell.
+3. The IE11 sniff runs at module load and calls `warning()` — a side effect on import,
+   despite `browserslist` saying `not ie 11`. Probably deletable.
+4. `jest.config.js` `collectCoverageFrom` has no thresholds, so coverage can regress
+   silently.
 
 ## Session log
 
 - **2026-07-17 — Phase 0** — Repo recon; created this file. Established the real API
   and export shape from source; catalogued 11 defects and the README's fabrications.
+- **2026-07-17 — Phase 1** — Traced the confidential path. Verdict: **no redaction
+  existed at all**, at capture or display. `internal()` wrote raw messages straight to
+  the buffer; `downloadLogs()` blobbed it verbatim, so exported `.txt` files contained
+  plaintext secrets. Recorded under Known issues at the time.
+- **2026-07-17 — Phase 2** — `feat!`: redact-at-capture via a single `_write()` choke
+  point; bounded ring buffer (2000, oldest-first); two-layer redaction (key-based for
+  objects, string scan for composed lines) with blacklist/whitelist modes. Object
+  payloads added additively; two-string signature unchanged. v5.0.0. Tests 16 → 74,
+  mutation-checked. Also `fix(pkg)`: shipped types for the first time, removed the
+  `browser` field pointing at a never-built file, added an `exports` map.
+- **2026-07-17 — Phase 3** — README rewritten from verified source. Every example
+  executed against a packed tarball first; two drafted claims were wrong (`grant_type`
+  is a key not a value; overlapping layers double-marked) and were fixed — the second
+  by collapsing adjacent markers in `scrubString()`.
 </content>

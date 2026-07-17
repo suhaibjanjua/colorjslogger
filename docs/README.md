@@ -5,7 +5,9 @@
 
 Fast and lightweight colorful JS Logger for the browser and Nodejs. It is a perfect logger that supports all browsers.
 
-It allows to print color logs with pre-defined 5 levels of logging (`info`, `warning`, `error`, `success`, `debug`). You can enable the `VERBOSE` flag to print debug logs during the development phase and you can disable it by setting `VERBOSE` flag to false to avoid printing confidential logs in production.
+It allows to print color logs with pre-defined 5 levels of logging (`info`, `warning`, `error`, `success`, `debug`). Enable the `VERBOSE` flag to print debug logs during development, and disable it in production to keep them out of the console.
+
+Sensitive values are redacted at capture, before they reach the log buffer, so the recorded history and the downloadable file never contain a raw token, password or auth header that redaction matched.
 
 
 ## Features

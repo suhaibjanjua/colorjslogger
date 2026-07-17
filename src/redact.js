@@ -222,7 +222,7 @@ export const scrubString = (line, config) => {
     out = out.replace(rule.re, rule.to);
   }
 
-  return out.replace(KEY_SHAPE_RE, (match, quote, key, sep, dq, sq, bare) => {
+  out = out.replace(KEY_SHAPE_RE, (match, quote, key, sep, dq, sq, bare) => {
     if (!isSensitiveKey(key, config)) return match;
     if (dq !== undefined) return `${quote}${key}${quote}${sep}"${REDACTED}"`;
     if (sq !== undefined) return `${quote}${key}${quote}${sep}'${REDACTED}'`;
@@ -230,4 +230,11 @@ export const scrubString = (line, config) => {
     void bare;
     return `${quote}${key}${quote}${sep}${REDACTED}`;
   });
+
+  // Both layers legitimately fire on the same span: the value-shape pass turns
+  // 'Authorization: Basic <b64>' into 'Authorization: Basic [REDACTED]', and
+  // the key-shape pass then redacts the now-bare 'Basic', yielding
+  // '[REDACTED] [REDACTED]'. Safe, but noise. Collapse adjacent markers only —
+  // markers separated by real text stay distinct.
+  return out.replace(/\[REDACTED\](?:\s+\[REDACTED\])+/g, REDACTED);
 };

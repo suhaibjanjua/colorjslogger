@@ -1,44 +1,48 @@
 ## Installation
 
-### **NPM**
-
-You can install colorjslogger as a dependency using NPM.
+### NPM
 
 ```bash
-$ npm install colorjslogger --save
+$ npm install colorjslogger
 ```
 
-
-### **Yarn**
-
-You can install colorjslogger as a dependency using Yarn.
+### Yarn
 
 ```bash
 $ yarn add colorjslogger
 ```
 
+### Bundlers (Vite, React, webpack, Rollup)
 
-### **CDN**
+The package has a **default export**; TypeScript definitions ship with it.
 
-json2csv plainjs modules is packaged as an ES6 modules.
-If your browser supports modules, you can load json2csv plainjs modules directly on the browser from the CDN.
+```js
+import jslogger from 'colorjslogger';
 
-You can import the latest version:
+jslogger.info('JSLOGGER', 'Imported via a bundler');
+```
+
+### Script tag (CDN)
+
+The UMD build exposes the global `ColorJSLogger` (with `jslogger` as a legacy
+alias):
 
 ```html
-<script type="module">
-  import jslogger from 'https://cdn.jsdelivr.net/npm/colorjslogger@latest/src/jslogger.min.js';
-
-  jslogger.info('JSLOGGER', 'Imported ES6Module directly in the browser');
+<script src="https://cdn.jsdelivr.net/npm/colorjslogger@5.0.0/dist/jslogger.min.js"></script>
+<script>
+  ColorJSLogger.info('JSLOGGER', 'Loaded from the CDN');
 </script>
 ```
 
-You can also select a specific version:
+### ES modules in the browser, no bundler
 
 ```html
 <script type="module">
-  import jslogger from 'https://cdn.jsdelivr.net/npm/colorjslogger@4.0.0/src/jslogger.min.js';
+  import jslogger from 'https://cdn.jsdelivr.net/npm/colorjslogger@5.0.0/dist/jslogger.esm.js';
 
-  jslogger.info('JSLOGGER', 'Imported ES6Module directly in the browser');
+  jslogger.info('JSLOGGER', 'Imported as an ES module directly in the browser');
 </script>
 ```
+
+Pin the version rather than using `@latest`, so a future major cannot change
+behaviour under a cached page.

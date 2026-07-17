@@ -122,6 +122,22 @@ describe('String scan — value shapes', () => {
     expect(rawEntries()[0]).not.toContain(JWT);
   });
 
+  test('overlapping layers collapse to a single marker', () => {
+    // Value-shape redacts 'Basic <b64>', then key-shape redacts the bare
+    // 'Basic' left behind. Both firing is correct; two markers is just noise.
+    ColorJSLogger.internal('Auth', `Authorization: Basic ${BASIC_B64}`);
+    expect(rawEntries()[0]).toContain('Authorization: [REDACTED]');
+    expect(rawEntries()[0]).not.toContain('[REDACTED] [REDACTED]');
+  });
+
+  test('markers separated by real text stay distinct', () => {
+    ColorJSLogger.internal('Auth', 'token=abc123xyz user=alice secret=shh');
+
+    const entry = rawEntries()[0];
+    expect(entry).toContain('user=alice');
+    expect(entry.match(/\[REDACTED\]/g)).toHaveLength(2);
+  });
+
   test('a bare JWT with no key name', () => {
     ColorJSLogger.internal('Auth', `handing back ${JWT} to the caller`);
 
