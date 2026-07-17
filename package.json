@@ -3,12 +3,12 @@
     "version": "5.0.0",
     "description": "Write colorful logs in browser console with download capabilities and application-specific prefixes.",
     "main": "dist/jslogger.js",
-    "browser": "dist/jslogger.umd.js",
     "module": "dist/jslogger.esm.js",
     "types": "dist/index.d.ts",
     "files": [
         "dist",
         "src/jslogger.js",
+        "src/redact.js",
         "README.md",
         "LICENSE.md"
     ],
@@ -16,7 +16,7 @@
         "build": "npm run clean && npm run build:umd && npm run build:esm && npm run build:types",
         "build:umd": "rollup -c rollup.config.js",
         "build:esm": "rollup -c rollup.config.esm.js",
-        "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+        "build:types": "node -e \"require('fs').copyFileSync('src/index.d.ts','dist/index.d.ts')\"",
         "build:demo:lib": "npm run build:umd && cp dist/jslogger.min.js examples/lib/jslogger.min.js",
         "clean": "rimraf dist",
         "dev": "rollup -c rollup.config.js --watch",
@@ -26,8 +26,9 @@
         "lint:fix": "eslint src --ext .js --fix",
         "format": "prettier --write \"src/**/*.js\"",
         "prepublishOnly": "npm run build",
-        "pretest": "npm run lint",
-        "demo": "node examples/node-demo.js"
+        "pretest": "npm run lint && npm run typecheck",
+        "demo": "node examples/node-demo.js",
+        "typecheck": "tsc --noEmit"
     },
     "repository": {
         "type": "git",
@@ -82,5 +83,15 @@
         "rollup": "^3.29.4",
         "typescript": "^5.2.2"
     },
-    "dependencies": {}
+    "dependencies": {},
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/jslogger.esm.js",
+            "require": "./dist/jslogger.js",
+            "default": "./dist/jslogger.js"
+        },
+        "./dist/*": "./dist/*",
+        "./package.json": "./package.json"
+    }
 }
