@@ -21,7 +21,7 @@ const RealBlob = global.Blob;
 beforeEach(() => {
   ColorJSLogger.clearLogs();
   ColorJSLogger.resetRedaction();
-  ColorJSLogger.setMaxEntries(2000);
+  ColorJSLogger.setMaxEntries(10000);
   ColorJSLogger.appName = 'ColorJSLogger';
 
   // jsdom's Blob keeps its contents private and implements no object-URL API,

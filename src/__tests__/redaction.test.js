@@ -24,7 +24,7 @@ const rawEntries = () => ColorJSLogger._entries;
 beforeEach(() => {
   ColorJSLogger.clearLogs();
   ColorJSLogger.resetRedaction();
-  ColorJSLogger.setMaxEntries(2000);
+  ColorJSLogger.setMaxEntries(10000);
   ColorJSLogger.appName = 'ColorJSLogger';
   ColorJSLogger.VERBOSE = false;
 
@@ -333,13 +333,13 @@ describe('Redaction configuration (2.3)', () => {
 });
 
 describe('Bounded ring buffer (2.2)', () => {
-  test('defaults to 2000 entries on a freshly loaded module', () => {
+  test('defaults to 10000 entries on a freshly loaded module', () => {
     // beforeEach sets the cap explicitly, so re-require to see the real default.
     let fresh;
     jest.isolateModules(() => {
       fresh = require('../jslogger.js');
     });
-    expect(fresh.getMaxEntries()).toBe(2000);
+    expect(fresh.getMaxEntries()).toBe(10000);
   });
 
   test('drops the oldest first once full', () => {
@@ -355,15 +355,15 @@ describe('Bounded ring buffer (2.2)', () => {
   });
 
   test('holds at the cap under sustained load', () => {
-    ColorJSLogger.setMaxEntries(2000);
-    for (let i = 0; i < 2500; i++) ColorJSLogger.internal('Loop', `e-${i}`);
+    ColorJSLogger.setMaxEntries(10000);
+    for (let i = 0; i < 12500; i++) ColorJSLogger.internal('Loop', `e-${i}`);
 
-    // Retained window is e-500 .. e-2499. Anchor on ':: ' + '\n' so that
-    // 'e-499' cannot accidentally match inside 'e-1499'.
-    expect(ColorJSLogger.getEntryCount()).toBe(2000);
-    expect(ColorJSLogger.getLogs()).not.toContain(':: e-499\n');
-    expect(ColorJSLogger.getLogs()).toContain(':: e-500\n');
-    expect(ColorJSLogger.getLogs()).toContain(':: e-2499\n');
+    // Retained window is e-2500 .. e-12499. Anchor on ':: ' + '\n' so that
+    // 'e-2499' cannot accidentally match inside 'e-12499'.
+    expect(ColorJSLogger.getEntryCount()).toBe(10000);
+    expect(ColorJSLogger.getLogs()).not.toContain(':: e-2499\n');
+    expect(ColorJSLogger.getLogs()).toContain(':: e-2500\n');
+    expect(ColorJSLogger.getLogs()).toContain(':: e-12499\n');
   });
 
   test('downloadLogs exports exactly the retained window', () => {

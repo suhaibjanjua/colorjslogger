@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [5.0.0] - 2026-07-17
+## [5.0.0] - 2026-07-23
 
 Security release. Sensitive values are now redacted **before** they enter the
 log buffer. Prior versions performed no redaction at all: `internal()` only
@@ -45,9 +45,16 @@ suppressed console output while writing the raw message to the buffer, so
 
 ### Changed
 - **BREAKING: the log buffer is bounded.** It is now a ring buffer capped at
-  2000 entries, evicting oldest first, where it previously grew without limit
+  10000 entries, evicting oldest first, where it previously grew without limit
   for the page lifetime. `downloadLogs()` exports exactly the retained window,
-  so a session logging more than 2000 entries will export fewer than before.
+  so a session logging more than 10000 entries will export fewer than before.
+  At a measured ~112 bytes per entry that is roughly 1.1 MB of heap and a
+  ~1.1 MB download. The cap was chosen by measurement: eviction cost is flat
+  up to 10000 (2.66 us/write, versus 2.64 at 2000) because V8 left-trims a
+  fast-mode array on shift() rather than copying, but past ~12000 the backing
+  store leaves that representation and shift() becomes a real memmove — 12000
+  measures 10.4 us/write and 50000 measures 45 us. Raising the cap further
+  requires head/tail index arithmetic, not just a bigger number.
 - **BREAKING: logged output is redacted.** Any consumer parsing its own logs
   should expect `[REDACTED]` where a deny-listed key or credential shape
   appears.

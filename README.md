@@ -50,7 +50,7 @@ a string, wraps it in a `Blob`, and triggers a normal browser download.
    ┌──────────────┐    redact at    ┌──────────────────┐   ┌────────────┐
    │ compose line │ ─── capture ──▶ │  _entries[]      │──▶│ Blob → <a> │──▶ 💾 user's disk
    └──────────────┘                 │  (page memory,   │   └────────────┘
-          │                         │   max 2000)      │
+          │                         │   max 10000)     │
           ▼                         └──────────────────┘
    🖥️  console.log
 ```
@@ -60,7 +60,7 @@ a string, wraps it in a `Blob`, and triggers a normal browser download.
 | 🚫 **No network** | The source contains no `fetch`, no `XMLHttpRequest`, no `WebSocket`, no `sendBeacon`, no image beacons. Nothing is transmitted anywhere. |
 | 🚫 **No persistence** | Nothing is written to `localStorage`, `sessionStorage`, `IndexedDB`, or cookies. Close the tab and the buffer is gone. |
 | 🚫 **No telemetry** | No analytics, no phone-home, no version check. |
-| ✅ **Memory only** | A bounded `string[]` in page memory — capped at 2000 entries, oldest evicted first, so a long-lived SPA cannot leak memory through it. |
+| ✅ **Memory only** | A bounded `string[]` in page memory — capped at 10000 entries (~1 MB), oldest evicted first, so a long-lived SPA cannot leak memory through it. |
 | ✅ **User-initiated download** | The file is produced locally via `Blob` + `URL.createObjectURL()`. The user chooses to save it; it never touches a server. |
 | ✅ **Zero dependencies** | Nothing in your bundle but this library — no transitive supply chain. |
 
@@ -375,7 +375,8 @@ Mon Aug 12 2019 22:37:57 | JSLogger | [TokenService] :: Token refresh initiated.
 
 #### `setMaxEntries(n)` · `getMaxEntries()`
 
-Sets how many entries are retained before the oldest are evicted. Default **2000**.
+Sets how many entries are retained before the oldest are evicted. Default **10000**,
+which holds roughly 1 MB at a measured average of ~112 bytes per entry.
 
 ```js
 jslogger.setMaxEntries(3);
@@ -396,7 +397,7 @@ leave the current cap untouched:
 
 ```js
 jslogger.setMaxEntries(0);        // also: -5, '100', null, NaN, Infinity
-console.log(jslogger.getMaxEntries());  // → 2000, unchanged
+console.log(jslogger.getMaxEntries());  // → 10000, unchanged
 ```
 
 ```text

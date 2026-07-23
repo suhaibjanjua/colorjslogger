@@ -14,7 +14,7 @@ const originalConsole = global.console;
 beforeEach(() => {
   ColorJSLogger.clearLogs();
   ColorJSLogger.resetRedaction();
-  ColorJSLogger.setMaxEntries(2000);
+  ColorJSLogger.setMaxEntries(10000);
   global.console = { ...originalConsole, log: jest.fn(), warn: jest.fn() };
 });
 

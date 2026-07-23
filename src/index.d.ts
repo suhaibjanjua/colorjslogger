@@ -122,7 +122,7 @@ export interface ColorJSLoggerStatic {
    * Set how many log entries are retained before the oldest are evicted.
    * Values that are non-numeric, non-finite or <= 0 are rejected with a
    * console warning and leave the current cap untouched.
-   * @param n - Positive integer entry cap (default 2000)
+   * @param n - Positive integer entry cap (default 10000)
    */
   setMaxEntries(n: number): void;
 

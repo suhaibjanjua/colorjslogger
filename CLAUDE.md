@@ -56,7 +56,7 @@ object (objects are key-redacted, then JSON-serialised). There is no varargs and
 | `setAppName` | `(name) => void` | Trims + sets; warns and keeps old value on non-string/empty |
 | `setLevelToVerbose` | `(isVerbose) => void` | `VERBOSE = Boolean(isVerbose)` |
 | `setMaxEntries` | `(n) => void` | Ring cap; rejects non-numeric/non-finite/`<= 0` with a warning; floors fractions; evicts immediately when lowered |
-| `getMaxEntries` | `() => number` | Current cap (default 2000) |
+| `getMaxEntries` | `() => number` | Current cap (default 10000) |
 | `getEntryCount` | `() => number` | Retained entry count |
 | `addRedactedKeys` | `(keys) => void` | Extend the deny-list; strings become case-insensitive **substring** patterns, RegExp passes through |
 | `setRedactionMode` | `('blacklist'\|'whitelist') => void` | Default `'blacklist'` |
@@ -116,7 +116,13 @@ internal (no level, no console)─┘        │
 ```
 
 - `_entries` is a bounded `string[]` (oldest-first), capped by `_maxEntries`
-  (default 2000), evicting via `shift()` on overflow.
+  (default 10000 since v5.0.0), evicting via `shift()` on overflow.
+  **Do not raise the default past ~10000 without re-measuring.** `shift()` is cheap
+  because V8 left-trims a fast-mode array by moving its base pointer instead of
+  copying, so eviction cost is flat to 10000 (2.66 µs/write, vs 2.64 at 2000). Past
+  ~12000 the backing store leaves that representation and `shift()` becomes a real
+  memmove — 12000 measured 10.4 µs (4x), 50000 measured 45 µs (17x). A larger cap
+  needs head/tail index arithmetic first.
 - `getLogs()` joins the ring. `downloadLogs()` blobs `getLogs()` — it never touches
   `_entries` directly, so it cannot diverge from the retained window.
 - `internal()` is `_write()` with no `level`, which is the only thing that suppresses

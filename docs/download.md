@@ -9,7 +9,7 @@ jslogger.downloadLogs('session.log'); // explicit filename
 
 Outside a browser this warns and does nothing.
 
-The buffer is a bounded ring — **2000 entries by default**, oldest evicted first
+The buffer is a bounded ring — **10000 entries by default**, oldest evicted first
 — and the download contains exactly the retained window.
 
 ```js
