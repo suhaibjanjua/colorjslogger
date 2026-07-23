@@ -1,79 +1,115 @@
-<h1 align="center">ColorJSLogger</h1>
-<p align="center">Colorful, downloadable browser console logs — with secrets redacted before they are ever stored.</p>
+<div align="center">
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/colorjslogger"><img alt="npm" src="https://img.shields.io/npm/v/colorjslogger"></a>
-  <a href="https://github.com/suhaibjanjua/colorjslogger/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/suhaibjanjua/colorjslogger/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/suhaibjanjua/colorjslogger/blob/master/LICENSE.md"><img alt="License" src="https://img.shields.io/npm/l/colorjslogger"></a>
-  <a href="https://bundlephobia.com/package/colorjslogger"><img alt="Size" src="https://img.shields.io/bundlephobia/minzip/colorjslogger"></a>
-</p>
+# 🎨 ColorJSLogger
+
+**Colorful, structured browser logs that live in memory — and download as a file.**
+
+No servers. No network calls. No telemetry. Nothing ever leaves the browser.
+
+[![npm version](https://img.shields.io/npm/v/colorjslogger?color=%23c1272d&label=npm)](https://www.npmjs.com/package/colorjslogger)
+[![CI](https://github.com/suhaibjanjua/colorjslogger/actions/workflows/ci.yml/badge.svg)](https://github.com/suhaibjanjua/colorjslogger/actions/workflows/ci.yml)
+[![minzipped](https://img.shields.io/bundlephobia/minzip/colorjslogger?color=%23007ec6)](https://bundlephobia.com/package/colorjslogger)
+[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/colorjslogger?activeTab=dependencies)
+[![types](https://img.shields.io/npm/types/colorjslogger)](https://www.npmjs.com/package/colorjslogger)
+[![license](https://img.shields.io/npm/l/colorjslogger?color=yellow)](LICENSE.md)
+
+[Install](#-install) · [Quick start](#-quick-start) · [API reference](#-api-reference) · [Client-side by design](#-client-side-by-design) · [Redaction](#-redaction) · [Security](#-security)
+
+</div>
 
 ---
 
-ColorJSLogger prints color-coded, timestamped, app-prefixed logs to the browser
-console and keeps them in memory so a user can hand you the whole session as a
-`.log` file. Zero dependencies.
-
-It is built for applications that log around sensitive data. Every entry is
-redacted **at capture** — before it enters the buffer — so the in-memory history
-and the downloaded file never contain a raw token, password, or auth header.
-
 ```js
-jslogger.internal('Auth', `token=${accessToken}`);
-// buffered and downloaded as:
-// Fri Jul 17 2026 09:14:22 | MyApp | [Auth] :: token=[REDACTED]
+let username = 'Suhaib Janjua';
+jslogger.log('AuthService', `Authentication successful: User "${username}" loggedin.`);
 ```
 
-## Contents
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: Authentication successful: User "Suhaib Janjua" loggedin.
+```
 
-- [Install](#install)
-- [Quick start](#quick-start)
-- [API](#api)
-- [Redaction](#redaction)
-- [Log retention](#log-retention)
-- [Security](#security)
-- [Demo](#demo)
-- [Contributing](#contributing)
-- [License](#license)
+Five color-coded levels, a configurable app name on every line, a bounded in-memory
+history, and a one-call download of the whole session as a `.log` file. Zero
+dependencies, ~2 KB gzipped.
 
-## Install
+---
+
+## 🔒 Client-side by design
+
+This is the part that matters most: **ColorJSLogger has no backend, and never will.**
+
+Every entry your app logs is composed in the browser, redacted in the browser, and
+appended to a plain JavaScript array held in page memory. That array is the entire
+storage layer. When you call `downloadLogs()`, the library stitches those entries into
+a string, wraps it in a `Blob`, and triggers a normal browser download.
+
+```
+   jslogger.info(…)                                    downloadLogs()
+          │                                                   │
+          ▼                                                   ▼
+   ┌──────────────┐    redact at    ┌──────────────────┐   ┌────────────┐
+   │ compose line │ ─── capture ──▶ │  _entries[]      │──▶│ Blob → <a> │──▶ 💾 user's disk
+   └──────────────┘                 │  (page memory,   │   └────────────┘
+          │                         │   max 2000)      │
+          ▼                         └──────────────────┘
+   🖥️  console.log
+```
+
+| | |
+| --- | --- |
+| 🚫 **No network** | The source contains no `fetch`, no `XMLHttpRequest`, no `WebSocket`, no `sendBeacon`, no image beacons. Nothing is transmitted anywhere. |
+| 🚫 **No persistence** | Nothing is written to `localStorage`, `sessionStorage`, `IndexedDB`, or cookies. Close the tab and the buffer is gone. |
+| 🚫 **No telemetry** | No analytics, no phone-home, no version check. |
+| ✅ **Memory only** | A bounded `string[]` in page memory — capped at 2000 entries, oldest evicted first, so a long-lived SPA cannot leak memory through it. |
+| ✅ **User-initiated download** | The file is produced locally via `Blob` + `URL.createObjectURL()`. The user chooses to save it; it never touches a server. |
+| ✅ **Zero dependencies** | Nothing in your bundle but this library — no transitive supply chain. |
+
+> **Note:** because the buffer is ordinary page memory, it is readable by devtools and
+> by any script running on the page, and the downloaded file is plaintext on disk. That
+> is a deliberate trade — see [Security](#-security).
+
+---
+
+## 📦 Install
 
 ```bash
 npm install colorjslogger
 ```
 
-### Bundlers (Vite, React, webpack, Rollup)
+<details open>
+<summary><b>Bundlers — Vite, React, Next.js, webpack, Rollup</b></summary>
 
 The package has a **default export**. There is no named export of the logger.
 
 ```js
 import jslogger from 'colorjslogger';
 
-jslogger.setAppName('MyApp');
+jslogger.setAppName('JSLogger');
 jslogger.info('Boot', 'Application started');
 ```
 
-TypeScript definitions ship with the package and are picked up automatically —
-no `@types` install.
+TypeScript definitions ship with the package and are picked up automatically — no
+`@types` install needed.
 
-```ts
-import jslogger, { type RedactionMode } from 'colorjslogger';
-```
+</details>
 
-### Script tag (CDN)
+<details>
+<summary><b>Script tag — CDN</b></summary>
 
-The UMD build exposes the global **`ColorJSLogger`** (with `jslogger` as a
-legacy alias):
+The UMD build exposes the global **`ColorJSLogger`** (with `jslogger` as a legacy alias):
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/colorjslogger@5.0.0/dist/jslogger.min.js"></script>
 <script>
-  ColorJSLogger.setAppName('MyApp');
+  ColorJSLogger.setAppName('JSLogger');
   ColorJSLogger.info('Boot', 'Application started');
 </script>
 ```
 
-### ES modules in the browser, no bundler
+</details>
+
+<details>
+<summary><b>ES modules in the browser — no bundler</b></summary>
 
 ```html
 <script type="module">
@@ -83,10 +119,12 @@ legacy alias):
 </script>
 ```
 
-Pin the version rather than using `@latest`, so a future major cannot change
-behaviour under a cached page.
+</details>
 
-### Entry points
+Pin the version rather than using `@latest`, so a future major cannot change behaviour
+under a cached page.
+
+**Entry points**
 
 | Field | File | Format |
 | --- | --- | --- |
@@ -95,231 +133,550 @@ behaviour under a cached page.
 | `types` | `dist/index.d.ts` | TypeScript |
 | — | `dist/jslogger.min.js` | UMD, minified, for script tags |
 
-## Quick start
+---
+
+## 🚀 Quick start
 
 ```js
 import jslogger from 'colorjslogger';
 
-jslogger.setAppName('AdminCenter');
+jslogger.setAppName('JSLogger');
 
-jslogger.info('Auth', 'Connection in progress');
-jslogger.success('Auth', 'User logged in');
-jslogger.warning('Api', 'Retrying request');
-jslogger.error('Api', 'Request failed');
-
-jslogger.setLevelToVerbose(true);
-jslogger.debug('Auth', 'Token refresh initiated');
+let username = 'Suhaib Janjua';
+jslogger.info('AuthService', `Authentication successful: User "${username}" loggedin.`);
+jslogger.success('AuthService', `Profile for "${username}" synced successfully.`);
+jslogger.warning('TokenService', 'Access token expires in 60 seconds.');
+jslogger.error('ApiService', 'Failed to parse response from /api/v1/profile.');
 
 jslogger.downloadLogs('session.log');
 ```
 
-Every log method takes exactly two arguments: a `process` label and a message.
-
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: Authentication successful: User "Suhaib Janjua" loggedin.
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: Profile for "Suhaib Janjua" synced successfully.
+Mon Aug 12 2019 22:37:57 | JSLogger | [TokenService] :: Access token expires in 60 seconds.
+Mon Aug 12 2019 22:37:57 | JSLogger | [ApiService] :: Failed to parse response from /api/v1/profile.
 ```
-Fri Jul 17 2026 09:14:22 | AdminCenter | [Auth] :: Connection in progress
-└─ timestamp ──────────┘   └─ appName ┘   └ process ┘   └─ message ─┘
+
+### Anatomy of a log line
+
+Every method takes exactly **two arguments** — a `process` label and a `message`.
+
+```text
+Mon Aug 12 2019 22:37:57 │ JSLogger │ [AuthService] :: Authentication successful…
+└──────── timestamp ────┘ └ appName ┘ └── process ──┘     └────── message ──────┘
+      automatic            setAppName()   argument 1          argument 2
 ```
 
-## API
+<sub>📅 Every example in this README is timestamped <code>Mon Aug 12 2019 22:37:57</code> — the day this logger was first designed and written. Your own logs carry the real time of the call.</sub>
 
-### Logging
+---
 
-| Method | Console | Buffer |
+## 📚 API reference
+
+Every example below assumes `jslogger.setAppName('JSLogger')` has been called.
+
+### Logging methods
+
+All seven share one signature: `(process, message)`. `message` may be a **string or an
+object**; objects are redacted by key, then serialised.
+
+| Method | Console | In-memory buffer |
 | --- | --- | --- |
-| `info(process, message)` | black | ✅ |
-| `success(process, message)` | green | ✅ |
-| `warning(process, message)` | orange | ✅ |
-| `error(process, message)` | red | ✅ |
-| `debug(process, message)` | blue, **only if verbose** | ✅ always |
-| `internal(process, message)` | never printed | ✅ |
-| `log(process, message)` | alias for `info` | ✅ |
+| [`info`](#info) | ⚫ black | ✅ |
+| [`success`](#success) | 🟢 green | ✅ |
+| [`warning`](#warning) | 🟠 orange | ✅ |
+| [`error`](#error) | 🔴 red | ✅ |
+| [`debug`](#debug) | 🔵 blue — **only if verbose** | ✅ always |
+| [`internal`](#internal) | 🚫 never printed | ✅ |
+| [`log`](#log) | ⚫ alias for `info` | ✅ |
 
-`message` may be a string or an object. Objects are key-redacted, then
-serialised:
+---
+
+#### `info`
+
+General application flow. Printed in black, and recorded.
 
 ```js
-jslogger.info('Api', { user: 'alice', password: 'hunter2' });
-// [Api] :: {"user":"alice","password":"[REDACTED]"}
+let username = 'Suhaib Janjua';
+jslogger.info('AuthService', `Authentication successful: User "${username}" loggedin.`);
 ```
 
-`internal()` keeps an entry out of the console but still records it for the
-downloaded file. It is a noise-control tool, **not** a security boundary — see
-[Security](#security).
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: Authentication successful: User "Suhaib Janjua" loggedin.
+```
+
+---
+
+#### `success`
+
+An operation completed. Printed in green.
+
+```js
+jslogger.success('AuthService', `Profile for "${username}" synced successfully.`);
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: Profile for "Suhaib Janjua" synced successfully.
+```
+
+---
+
+#### `warning`
+
+Something recoverable needs attention. Printed in orange.
+
+```js
+jslogger.warning('TokenService', 'Access token expires in 60 seconds.');
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [TokenService] :: Access token expires in 60 seconds.
+```
+
+---
+
+#### `error`
+
+Something failed. Printed in red.
+
+```js
+jslogger.error('ApiService', 'Failed to parse response from /api/v1/profile.');
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [ApiService] :: Failed to parse response from /api/v1/profile.
+```
+
+---
+
+#### `debug`
+
+Development detail. **Always recorded in the buffer**, but only printed to the console
+when verbose mode is on — so you can keep debug output out of a production console
+while still capturing it in the downloadable file.
+
+```js
+jslogger.debug('TokenService', 'Token refresh initiated.');
+// VERBOSE is false by default → nothing in the console…
+console.log(jslogger.getEntryCount()); // → 1  …but it IS in the buffer
+```
+
+```text
+(no console output)
+```
+
+```js
+jslogger.setLevelToVerbose(true);
+jslogger.debug('TokenService', 'Token refresh initiated.');
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [TokenService] :: Token refresh initiated.
+```
+
+---
+
+#### `internal`
+
+Recorded in the buffer and included in the download, but **never printed to the
+console**. Use it to keep noisy diagnostics out of the user's console view while
+still capturing them for the log file.
+
+```js
+jslogger.internal('AuthService', 'Session 4f2a opened for user 4821; refresh scheduled in 3600s.');
+```
+
+```text
+(no console output — but present in getLogs() and the downloaded file)
+
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: Session 4f2a opened for user 4821; refresh scheduled in 3600s.
+```
+
+> ⚠️ **`internal()` is a noise-control tool, not a security boundary.** The entry still
+> enters the buffer and still appears in the downloaded file. What protects sensitive
+> values is [redaction](#-redaction), which runs on every method alike.
+
+---
+
+#### `log`
+
+Alias for `info`.
+
+```js
+let username = 'Suhaib Janjua';
+jslogger.log('AuthService', `Authentication successful: User "${username}" loggedin.`);
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: Authentication successful: User "Suhaib Janjua" loggedin.
+```
+
+---
+
+#### Logging an object
+
+Pass an object instead of a string and it is redacted by key, then serialised:
+
+```js
+jslogger.info('AuthService', { user: 'Suhaib Janjua', role: 'admin', password: 'hunter2' });
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: {"user":"Suhaib Janjua","role":"admin","password":"[REDACTED]"}
+```
+
+---
 
 ### Configuration
 
-| Method | Description |
-| --- | --- |
-| `setAppName(name)` | Prefix for every log line. Non-string or empty input is rejected with a warning. |
-| `setLevelToVerbose(bool)` | Whether `debug()` reaches the console. Default `false`. |
-| `setMaxEntries(n)` | Retained entry cap. Default `2000`. |
-| `getMaxEntries()` | Current cap. |
-| `addRedactedKeys(keys)` | Extend the redaction deny-list. |
-| `setRedactionMode(mode)` | `'blacklist'` (default) or `'whitelist'`. |
-| `setAllowedKeys(keys)` | Allow-list used by whitelist mode. |
-| `resetRedaction()` | Restore the built-in defaults. |
+#### `setAppName(name)`
 
-### Log access
+Sets the prefix on every line. Default is `ColorJSLogger`.
 
-| Method | Description |
-| --- | --- |
-| `getLogs()` | Retained entries, oldest first, newline-joined. |
-| `getEntryCount()` | Number of retained entries. |
-| `clearLogs()` | Empty the buffer. |
-| `downloadLogs(filename?)` | Download the retained window as a text file. Warns and no-ops outside a browser. |
-| `version()` | Library version. |
-| `about()` | Project URL and copyright. |
+```js
+jslogger.info('AuthService', 'Connection in progress');   // before
+jslogger.setAppName('JSLogger');
+jslogger.info('AuthService', 'Connection in progress');   // after
+```
 
-## Redaction
+```text
+Mon Aug 12 2019 22:37:57 | ColorJSLogger | [AuthService] :: Connection in progress
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: Connection in progress
+```
 
-Redaction runs **at capture**, inside the single code path every log method
-shares, before the entry is written to the buffer. The buffer, the console and
-`downloadLogs()` all observe the same already-redacted string. There is no code
-path that retains a raw value after a log call returns.
+Non-string or empty input is rejected, keeping the previous name:
+
+```js
+jslogger.setAppName('');
+```
+
+```text
+ColorJSLogger: Invalid app name provided
+```
+
+---
+
+#### `setLevelToVerbose(isVerbose)`
+
+Controls whether [`debug()`](#debug) reaches the console. Default `false`. Coerced with
+`Boolean()`, so any truthy value enables it.
+
+```js
+jslogger.setLevelToVerbose(true);
+jslogger.debug('TokenService', 'Token refresh initiated.');
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [TokenService] :: Token refresh initiated.
+```
+
+---
+
+#### `setMaxEntries(n)` · `getMaxEntries()`
+
+Sets how many entries are retained before the oldest are evicted. Default **2000**.
+
+```js
+jslogger.setMaxEntries(3);
+for (let i = 1; i <= 5; i++) jslogger.info('Loop', `entry-${i}`);
+
+console.log(jslogger.getEntryCount());  // → 3
+console.log(jslogger.getLogs());
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [Loop] :: entry-3
+Mon Aug 12 2019 22:37:57 | JSLogger | [Loop] :: entry-4
+Mon Aug 12 2019 22:37:57 | JSLogger | [Loop] :: entry-5
+```
+
+`entry-1` and `entry-2` were evicted — oldest first. Nonsense values are rejected and
+leave the current cap untouched:
+
+```js
+jslogger.setMaxEntries(0);        // also: -5, '100', null, NaN, Infinity
+console.log(jslogger.getMaxEntries());  // → 2000, unchanged
+```
+
+```text
+ColorJSLogger: setMaxEntries() expects a positive number; ignoring
+```
+
+---
+
+### Reading and downloading
+
+#### `getLogs()`
+
+Returns the retained window as one string, oldest first, newline-separated.
+
+```js
+jslogger.info('AuthService', `User "${username}" loggedin.`);
+jslogger.info('ApiService', 'Profile loaded.');
+
+console.log(jslogger.getLogs());
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: User "Suhaib Janjua" loggedin.
+Mon Aug 12 2019 22:37:57 | JSLogger | [ApiService] :: Profile loaded.
+```
+
+---
+
+#### `getEntryCount()`
+
+How many entries are currently retained.
+
+```js
+console.log(jslogger.getEntryCount());
+```
+
+```text
+2
+```
+
+---
+
+#### `downloadLogs(filename?)`
+
+Builds a `Blob` from `getLogs()` and triggers a browser download. **Entirely local** —
+no upload, no server, no network. Outside a browser it warns and does nothing.
+
+```js
+jslogger.downloadLogs();                // JSLogger-Mon Aug 12 2019 22:37:57.log
+jslogger.downloadLogs('session.log');   // explicit filename
+```
+
+The saved file contains exactly the retained window:
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: User "Suhaib Janjua" loggedin.
+Mon Aug 12 2019 22:37:57 | JSLogger | [ApiService] :: Profile loaded.
+```
+
+In Node (or any environment without `document`):
+
+```text
+ColorJSLogger: downloadLogs() is only available in browser environments
+```
+
+---
+
+#### `clearLogs()`
+
+Empties the buffer.
+
+```js
+jslogger.clearLogs();
+console.log(jslogger.getEntryCount());  // → 0
+console.log(jslogger.getLogs());        // → '' (empty string)
+```
+
+---
+
+### Metadata
+
+#### `version()` · `about()`
+
+```js
+console.log(jslogger.version());
+console.log(jslogger.about());
+```
+
+```text
+5.0.0
+Website: https://github.com/suhaibjanjua/colorjslogger 
+ Copyright: (c) 2019-2025 Suhaib Janjua
+```
+
+---
+
+## 🛡️ Redaction
+
+Credentials are stripped **at capture** — before the entry reaches the buffer. The
+buffer, the console, and the downloaded file all observe the same redacted string.
+Redaction is never a display-time filter, so there is no code path where a raw value
+sits in memory waiting to be exported.
 
 Two layers run on every entry.
 
-**1. Key-based redaction of object payloads.** Recursive through nested objects
-and arrays, case-insensitive, matched as substrings so `token` also catches
-`access_token` and `refreshToken`. Your original object is never mutated, and
-circular references are handled rather than thrown.
+### 1. Object payloads — matched by key
+
+Recursive through nested objects and arrays, case-insensitive, matched as substrings so
+`token` also catches `access_token` and `refreshToken`. Your original object is never
+mutated, and circular references are handled rather than thrown.
 
 Redacted by default: `authorization`, `x-rainbow-app-auth`, `x-rainbow-api-key`,
-`password` / `pass`, `token`, `secret`, and `code` (OAuth).
+`password`/`pass`, `token`, `secret`, `code`.
 
 ```js
-jslogger.internal('Api', {
-  method: 'POST',
-  headers: { Authorization: 'Basic ' + btoa('user:hunter2') },
-  body: { grant_type: 'password', code: '4/0AY0e-g7' },
-});
-// [Api] :: {"method":"POST","headers":{"Authorization":"[REDACTED]"},
-//           "body":{"grant_type":"password","code":"[REDACTED]"}}
+jslogger.info('AuthService', { user: 'Suhaib Janjua', role: 'admin', password: 'hunter2' });
 ```
 
-Note `grant_type` in that output. Matching is on **key names, not values** — the
-key `grant_type` is not sensitive, so its literal value `"password"` is kept.
-`code` and `Authorization` are redacted because their *keys* match.
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: {"user":"Suhaib Janjua","role":"admin","password":"[REDACTED]"}
+```
 
-**2. A scan of the composed line.** Catches secrets that were interpolated into
-a string before the library ever saw them:
+### 2. Composed lines — matched by shape
 
-- key shapes — `token=…`, `password: …`, `"secret": "…"` for any deny-listed key
-- value shapes — `Bearer <token>`, `Basic <base64>`, and bare JWTs
+Catches secrets interpolated into a string before the library ever saw them: key shapes
+(`token=…`, `password: …`) and value shapes (`Bearer …`, `Basic …`, bare JWTs).
 
 ```js
-jslogger.internal('Auth', `Authorization: Basic ${btoa('user:hunter2')}`);
-// [Auth] :: Authorization: [REDACTED]
-
-jslogger.internal('Auth', `returning ${jwt} to caller`);
-// [Auth] :: returning [REDACTED] to caller
+jslogger.internal('TokenService', `token=${accessToken}`);
 ```
 
-The value-shape rules are deliberately narrow, anchored on unambiguous markers.
-There is no generic "long base64 blob" heuristic, so UUIDs, git SHAs, content
-hashes and request IDs survive intact:
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [TokenService] :: token=[REDACTED]
+```
 
 ```js
-jslogger.info('Req', 'requestId=550e8400-e29b-41d4-a716-446655440000');
-// [Req] :: requestId=550e8400-e29b-41d4-a716-446655440000
+jslogger.internal('ApiService', `Authorization: Basic ${btoa('suhaib:hunter2')}`);
 ```
 
-### Extending the deny-list
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [ApiService] :: Authorization: [REDACTED]
+```
 
-Strings match case-insensitively as substrings; pass a `RegExp` for exact
-control.
+Value-shape rules are deliberately narrow — there is no generic "long base64 blob"
+heuristic — so UUIDs, git SHAs and request IDs survive intact:
+
+```js
+jslogger.info('ApiService', 'requestId=550e8400-e29b-41d4-a716-446655440000');
+```
+
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [ApiService] :: requestId=550e8400-e29b-41d4-a716-446655440000
+```
+
+### `addRedactedKeys(keys)`
+
+Extend the deny-list. Strings match case-insensitively as substrings; pass a `RegExp`
+for exact control.
 
 ```js
 jslogger.addRedactedKeys(['ssn', 'account_number', /^pin$/i]);
+jslogger.info('Profile', { user: 'Suhaib Janjua', ssn: '123-45-6789' });
 ```
 
-### Whitelist mode
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [Profile] :: {"user":"Suhaib Janjua","ssn":"[REDACTED]"}
+```
 
-Blacklist mode is the default because it is safe with no configuration. If your
-threat model calls for it, invert the default so that **only** approved keys
-survive and everything else is redacted — including fields you did not
-anticipate.
+### `setRedactionMode(mode)` · `setAllowedKeys(keys)`
+
+Blacklist mode is the default because it is safe with no configuration. Whitelist mode
+inverts it: **only** approved keys survive, including fields you never anticipated.
 
 ```js
-jslogger.setAllowedKeys(['userId', 'method', 'status', 'durationMs']);
+jslogger.setAllowedKeys(['user', 'status']);
 jslogger.setRedactionMode('whitelist');
 
-jslogger.internal('Api', { userId: 42, status: 200, sessionKey: 'abc' });
-// [Api] :: {"userId":42,"status":200,"sessionKey":"[REDACTED]"}
+jslogger.info('ApiService', {
+  user: 'Suhaib Janjua',
+  status: 200,
+  sessionKey: 'sk_live_abc123',
+  ip: '10.0.0.4',
+});
 ```
 
-Allow-list entries match the **whole** key, case-insensitively. Call
-`setAllowedKeys()` before switching modes, or every field will come out
-redacted.
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [ApiService] :: {"user":"Suhaib Janjua","status":200,"sessionKey":"[REDACTED]","ip":"[REDACTED]"}
+```
 
-This library provides the mechanism. Choosing whitelist mode and deciding what
-belongs on the allow-list is a policy decision that belongs to your application.
+Note `ip` — never deny-listed, but redacted anyway because it is not on the allow-list.
+That is the point of whitelist mode. Allow-list entries match the **whole** key,
+case-insensitively; call `setAllowedKeys()` *before* switching modes or every field
+comes out redacted.
 
-## Log retention
+### `resetRedaction()`
 
-The buffer is a bounded ring: **2000 entries by default**, evicting oldest
-first. `downloadLogs()` exports exactly the retained window.
+Restores the built-in blacklist defaults, discarding any custom keys, mode, or
+allow-list.
 
 ```js
-jslogger.setMaxEntries(500);
+jslogger.resetRedaction();
 ```
 
-Values that are non-numeric, non-finite, or `<= 0` are rejected with a console
-warning and leave the current cap unchanged. Lowering the cap evicts down to it
-immediately.
+---
 
-## Security
+## 🔐 Security
 
-**Redact-at-capture guarantee.** Every log method funnels through one choke
-point that composes the entry, redacts it, and only then writes it to the
-buffer. Redaction is never a display-time filter. The buffer never holds a raw
-sensitive value, so the downloaded `.log` file cannot leak one that redaction
+**Redact-at-capture guarantee.** Every log method funnels through one code path that
+composes the entry, redacts it, and only then writes it to the buffer. The buffer never
+holds a raw sensitive value, so the downloaded file cannot leak one that redaction
 matched.
 
-**What redaction cannot do.** Both layers are key- and shape-based, and no such
-scheme can catch a secret in free-form prose that carries neither:
+**What redaction cannot do.** Both layers are key- and shape-based, and no such scheme
+can catch a secret in free-form prose that carries neither:
 
 ```js
-jslogger.info('Auth', 'the password is hunter2');
-// [Auth] :: the password is hunter2   ← NOT redacted
+jslogger.info('AuthService', 'the password is hunter2');
 ```
 
-There is no key here to match and no recognisable credential shape. Redaction is
-a safety net for the realistic accidents — a stringified request body, an
-interpolated header, a logged options object — not a guarantee that anything you
-pass will be sanitised. **What you choose to log remains your responsibility.**
+```text
+Mon Aug 12 2019 22:37:57 | JSLogger | [AuthService] :: the password is hunter2
+```
+
+There is no key to match and no recognisable credential shape. Redaction is a safety
+net for realistic accidents — a stringified request body, an interpolated header, a
+logged options object — not a guarantee that anything you pass will be sanitised.
+**What you choose to log remains your responsibility.**
 
 Known limits, stated plainly:
 
 - Prose containing a bare secret is not caught (above).
-- Opaque credentials with no key and no distinctive shape — a raw session ID, an
-  API key that looks like any other random string — are not caught. Add their key
-  names via `addRedactedKeys()`, or use whitelist mode.
+- Opaque credentials with no key and no distinctive shape — a raw session ID, an API key
+  that looks like any other random string — are not caught. Register their key names via
+  `addRedactedKeys()`, or use whitelist mode.
 - Substring key matching over-redacts by design: `code` also matches `zipcode`.
   Over-redacting is the safe direction.
-- Redaction applies to what you pass in. It cannot reach a secret already
-  concatenated into a string in a shape it does not recognise.
+- Redaction applies to what you pass in. It cannot reach a secret already concatenated
+  into a string in a shape it does not recognise.
 
-**No client-side logger is a secure store.** The buffer is plain JavaScript
-memory in the user's browser: readable from the console, from any script on the
-page, and from any extension with page access. The downloaded file is plaintext
-on the user's disk. Redaction here reduces the blast radius of logs you ship
-around — attached to a support ticket, pasted into a chat — it does not make the
-browser a safe place to keep secrets. Treat anything reaching the client as
-already disclosed to the user, and keep real secrets server-side.
+**No client-side logger is a secure store.** The buffer is plain JavaScript memory in
+the user's browser: readable from the console, from any script on the page, and from any
+extension with page access. The downloaded file is plaintext on disk. Redaction reduces
+the blast radius of logs you ship around — attached to a support ticket, pasted into a
+chat — it does not make the browser a safe place to keep secrets. Treat anything
+reaching the client as already disclosed to the user, and keep real secrets server-side.
 
 To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
-## Demo
+---
 
-**[Live demo](https://suhaibjanjua.github.io/colorjslogger/examples/demo.html)** —
-open your browser console to see the colored output.
+## 🧩 TypeScript
+
+Definitions ship with the package — nothing extra to install.
+
+```ts
+import jslogger, { type RedactionMode } from 'colorjslogger';
+
+jslogger.setAppName('JSLogger');
+jslogger.setMaxEntries(500);
+
+const mode: RedactionMode = 'whitelist';
+jslogger.setRedactionMode(mode);
+
+const retained: number = jslogger.getEntryCount();
+```
+
+---
+
+## 🎮 Demo
+
+**[▶ Live demo](https://suhaibjanjua.github.io/colorjslogger/examples/demo.html)** — open
+your browser console to see the colored output, then try the download button.
 
 ```bash
 npm run demo   # node examples/node-demo.js
 ```
 
-## Contributing
+---
+
+## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -329,7 +686,13 @@ npm test        # lint + typecheck + jest
 npm run build   # UMD + ESM + types into dist/
 ```
 
-## License
+---
 
-MIT — see [LICENSE.md](LICENSE.md). Copyright (c) 2019-2025 Suhaib Janjua.
+## 📄 License
+
+MIT — see [LICENSE.md](LICENSE.md).
+
+<div align="center">
+<sub>Built by <b><a href="http://www.suhaibjanjua.com/">Suhaib Janjua</a></b> · since Mon Aug 12 2019 · Copyright © 2019–2025</sub>
+</div>
 </content>
