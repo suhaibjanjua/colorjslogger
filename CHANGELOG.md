@@ -9,94 +9,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.0.0] - 2026-07-23
 
-Security release. Sensitive values are now redacted **before** they enter the
-log buffer. Prior versions performed no redaction at all: `internal()` only
-suppressed console output while writing the raw message to the buffer, so
-`downloadLogs()` exported plaintext secrets.
+Security release. Sensitive values are now redacted **before** they enter the log
+buffer. Earlier versions performed no redaction at all — `internal()` only
+suppressed console output, so `downloadLogs()` exported plaintext secrets. If you
+logged tokens or passwords on 4.x or earlier, treat previously exported log files
+as compromised.
 
 ### Security
-- **Redact at capture.** All log methods now route through a single choke point
-  that composes, redacts, and only then buffers the entry. The buffer, console
-  and `downloadLogs()` all observe the same redacted string. No raw sensitive
-  value is retained after a log call returns.
-- **Two-layer redaction, on by default.** Key-based redaction for object
-  payloads (recursive, non-mutating, circular-safe), plus a scan of the composed
-  line catching `token=…`/`password: …` key shapes and `Bearer`/`Basic`/bare-JWT
-  value shapes. Default deny-list: `authorization`, `x-rainbow-app-auth`,
-  `x-rainbow-api-key`, `pass`/`password`, `token`, `secret`, `code`.
-- **Whitelist mode** (`setRedactionMode('whitelist')` + `setAllowedKeys()`) for
-  consumers who want only approved keys to survive.
-- Fixed a leak where `debug()` bypassed the shared log path entirely when
-  `VERBOSE` was false, so its entries reached the buffer unprocessed.
-- Fixed quadratic backtracking (ReDoS) in the key-shape pattern; a 40KB
-  separator-free message took 3.4s to scan and now takes 14ms.
-- `SECURITY.md` rewritten with a disclosure process, the capture-time
-  guarantee, and an explicit statement of what redaction cannot catch.
+- **Redact at capture.** Every log method routes through one choke point that
+  composes, redacts, then buffers. The buffer, the console and `downloadLogs()`
+  all observe the same redacted string; no raw value survives the call.
+- **On by default.** Two layers: key-based redaction for object payloads
+  (recursive, non-mutating, circular-safe), and a scan of the composed line for
+  `token=…` / `password: …` key shapes and `Bearer` / `Basic` / bare-JWT value
+  shapes. Deny-list: `authorization`, `x-rainbow-app-auth`, `x-rainbow-api-key`,
+  `pass`/`password`, `token`, `secret`, `code`.
+- **Whitelist mode** — opt in so only approved keys survive into the buffer.
+- Fixed `debug()` bypassing redaction entirely when `VERBOSE` was false.
+- Fixed a ReDoS in the key-shape pattern (40 KB input: 3.4 s → 14 ms).
+- `SECURITY.md` rewritten with a disclosure process and honest limits on what
+  redaction can and cannot catch.
 
 ### Added
-- `setMaxEntries(n)`, `getMaxEntries()`, `getEntryCount()`.
-- `addRedactedKeys(keys)`, `setRedactionMode(mode)`, `setAllowedKeys(keys)`,
-  `resetRedaction()`.
-- Object payloads: log methods now accept an object as `message` and redact it
-  by key before serialising. The `(process, message)` string signature is
-  unchanged.
-- TypeScript definitions now actually ship (see Fixed), covering the full API.
-- `exports` map with `types`/`import`/`require` conditions.
+- `setMaxEntries(n)`, `getMaxEntries()`, `getEntryCount()`
+- `addRedactedKeys()`, `setRedactionMode()`, `setAllowedKeys()`, `resetRedaction()`
+- Log methods now accept an **object** as `message`, redacted by key before
+  serialisation. The two-string signature is unchanged.
+- TypeScript definitions, and an `exports` map with types/import/require.
 
 ### Changed
-- **BREAKING: the log buffer is bounded.** It is now a ring buffer capped at
-  10000 entries, evicting oldest first, where it previously grew without limit
-  for the page lifetime. `downloadLogs()` exports exactly the retained window,
-  so a session logging more than 10000 entries will export fewer than before.
-  At a measured ~112 bytes per entry that is roughly 1.1 MB of heap and a
-  ~1.1 MB download. The cap was chosen by measurement: eviction cost is flat
-  up to 10000 (2.66 us/write, versus 2.64 at 2000) because V8 left-trims a
-  fast-mode array on shift() rather than copying, but past ~12000 the backing
-  store leaves that representation and shift() becomes a real memmove — 12000
-  measures 10.4 us/write and 50000 measures 45 us. Raising the cap further
-  requires head/tail index arithmetic, not just a bigger number.
-- **BREAKING: logged output is redacted.** Any consumer parsing its own logs
-  should expect `[REDACTED]` where a deny-listed key or credential shape
-  appears.
-- **BREAKING: `objLogs` is no longer a plain string property.** It is a
-  deprecated accessor: reads return the retained window, `objLogs = ''` still
-  clears, any other write warns and is ignored. Use `getLogs()` / `clearLogs()`.
-- **BREAKING: `engines` now requires Node >= 20** (was `>=12`). Node 18 and
-  below cannot build the project: `@rollup/plugin-terser` runs terser in a
-  worker thread and `serialize-javascript` calls bare `crypto` at module
-  scope, but on Node 18 `globalThis.crypto` is present only on the main
-  thread and is `undefined` inside workers, so the build fails with
-  `ReferenceError: crypto is not defined`. Tests pass on 18; only the build
-  breaks. Node 20 is the first release whose workers expose it. CI had been
-  red on this since April 2026 (then via Node 16, which lacks it entirely).
-- **BREAKING: the `browser` package field was removed.** It pointed at
-  `dist/jslogger.umd.js`, a file no build has ever produced. `main` is a
-  browser-safe UMD bundle; bundlers should use `module`/`exports`.
-- The two rollup configs are consolidated into one with three outputs.
-- CI matrix is now Node 18/20/22.
+- **BREAKING: the buffer is bounded** — a 10 000-entry ring, oldest evicted
+  first, where it previously grew unbounded for the page lifetime.
+  `downloadLogs()` exports exactly the retained window.
+- **BREAKING: logged output is redacted.** Expect `[REDACTED]` wherever a
+  deny-listed key or credential shape appears.
+- **BREAKING: `objLogs` is now a deprecated accessor,** not a string property.
+  Reads return the retained window and `objLogs = ''` still clears; any other
+  write warns and is ignored. Use `getLogs()` / `clearLogs()`.
+- **BREAKING: building requires Node >= 20** (was `>=12`). CI tests 22 and 24.
+- **BREAKING: the `browser` field was removed** — it pointed at a file no build
+  has ever produced. Use `main`, `module` or `exports`.
+- Consolidated the two rollup configs into one with three outputs.
 
 ### Fixed
-- **Type definitions are published for the first time.** `types` pointed at
-  `dist/index.d.ts`, which `build:types` never produced: tsc cannot emit
-  declarations from a project with no `.ts` source, so it exited 0 having
-  written nothing. `build:types` now ships the hand-written `src/index.d.ts`,
-  and a test guards it against drifting from the runtime.
-- `version()` returned a hardcoded `4.0.0` while the package was `4.0.4`. It
-  now returns `5.0.0` and a test pins it to `package.json`.
-- `npm test` could not run at all on a `core.autocrlf=true` checkout: every line
-  failed prettier's `endOfLine: 'lf'` rule. Added `.gitattributes`.
+- **Type definitions ship for the first time.** `types` pointed at a file
+  `build:types` never produced, so no consumer had ever received types.
+- `version()` returned `4.0.0` while the package was `4.0.4`; a test now pins it
+  to `package.json`.
+- `npm test` could not run at all on a `core.autocrlf=true` checkout.
 
 ### Documentation
-- README rewritten from verified source. The previous one was AI-generated from
-  filenames and claimed UglifyJS (it is Rollup), a `jslogger.warn()` that does
-  not exist, single-argument log calls, a CDN path that 404s, and an "Inferred"
-  section imagining `internal()` redacted or excluded confidential logs — the
-  opposite of its behaviour. Every example in the new README was executed
-  against a packed tarball before release.
+- README rewritten from verified source, with every example executed against a
+  packed tarball before release. The previous one was generated from filenames
+  and documented methods and behaviour that did not exist.
 
-### Tests
-- 16 -> 100 tests. Coverage 70% -> 90.5% statements, 100% functions, with
-  thresholds enforced in CI.
+### Internal
+- 16 → 100 tests; coverage 70% → 90.5% statements, 100% functions, enforced in CI.
+- Dev dependencies updated to clear all `npm audit` advisories. No runtime
+  dependencies exist, and the published bundles are byte-identical.
 
 ## [4.0.4] - 2025-09-21
 
