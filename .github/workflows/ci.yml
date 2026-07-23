@@ -12,15 +12,22 @@ jobs:
     
     strategy:
       matrix:
-        # Node 18 and below cannot build. @rollup/plugin-terser runs terser in
-        # a worker thread, and serialize-javascript calls bare `crypto` at
-        # module scope. On Node 18 `globalThis.crypto` exists on the main
-        # thread but is undefined inside workers, so the build dies with
-        # 'ReferenceError: crypto is not defined' — while `npm test` passes,
-        # which is what makes this easy to misdiagnose. Node 20 is the first
-        # release whose worker global scope has it. 16 and 18 are both EOL;
-        # package.json engines says >=20 to match.
-        node-version: [20.x, 22.x, 24.x]
+        # Currently-supported LTS only. Per the Node release schedule:
+        #   18 Hydrogen  EOL 2025-04-30
+        #   20 Iron      EOL 2026-04-30
+        #   22 Jod       maintenance LTS until 2027-04-30
+        #   24 Krypton   active LTS until 2028-04-30
+        # Add 26.x when it ships (Oct 2027) and drop 22.x when it goes EOL.
+        #
+        # Note this is deliberately NARROWER than package.json engines
+        # (>=20). Node 20 is the floor the project can BUILD on -
+        # @rollup/plugin-terser runs terser in a worker thread and
+        # serialize-javascript calls bare `crypto` at module scope, which on
+        # Node 18 is undefined inside workers even though it exists on the
+        # main thread (so `npm test` passes and only the build fails). That
+        # build floor is a maintainer concern; consumers of this browser
+        # bundle need far less, so engines stays permissive.
+        node-version: [22.x, 24.x]
     
     steps:
     - uses: actions/checkout@v4
@@ -44,7 +51,7 @@ jobs:
       run: npm run build
     
     - name: Upload coverage to Codecov
-      if: matrix.node-version == '20.x'
+      if: matrix.node-version == '22.x'
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -64,10 +71,10 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Use Node.js 20.x
+    - name: Use Node.js 22.x
       uses: actions/setup-node@v4
       with:
-        node-version: 20.x
+        node-version: 22.x
         registry-url: 'https://registry.npmjs.org'
         cache: 'npm'
     

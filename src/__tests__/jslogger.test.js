@@ -41,7 +41,7 @@ describe('ColorJSLogger', () => {
     test('should return correct about information', () => {
       const about = ColorJSLogger.about();
       expect(about).toContain('github.com/suhaibjanjua/colorjslogger');
-      expect(about).toContain('2019-2025 Suhaib Janjua');
+      expect(about).toContain('2019-2026 Suhaib Janjua');
     });
   });
 

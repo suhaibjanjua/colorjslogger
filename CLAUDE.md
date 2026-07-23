@@ -168,9 +168,18 @@ allow-list, by contrast, is whole-key — an allow-list must not silently widen.
 - Jest: `testEnvironment: 'node'` by default; `download.test.js` opts into jsdom via a
   `@jest-environment jsdom` docblock.
 - CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs lint/test/build on
-  Node 18/20/22, then auto-tags, auto-releases, and **auto-publishes to npm on any push
-  to master where package.json's version line changed**. Bumping the version and
-  pushing *is* a release. Treat version bumps as live ammunition.
+  **Node 22/24** (supported LTS only — 18 EOL 2025-04-30, 20 EOL 2026-04-30), then
+  auto-tags, auto-releases, and **auto-publishes to npm on any push to master where
+  package.json's version line changed**. Bumping the version and pushing *is* a
+  release. Treat version bumps as live ammunition.
+  - The version gate is `git diff HEAD~1 package.json | grep '"version"'`, so it only
+    fires when the version line moves **in the tip commit**. A release whose bump
+    landed several commits earlier will silently skip publishing — the job still
+    reports success. Use `gh workflow run publish-npm.yml` for that case.
+  - The matrix is deliberately narrower than `engines` (>=20). 20 is the *build*
+    floor; 22/24 are what is *supported*. All four workflows must run >=20 or the
+    build dies — `publish-npm.yml`, `release.yml` and `create-missing-releases.yml`
+    all pinned Node 18 until v5.0.0 and would have failed on any manual publish.
 - **Node 18 and below cannot build this project. Node 20 is the floor.**
   `@rollup/plugin-terser` runs terser in a **worker thread**, and `serialize-javascript`
   calls bare `crypto` at module scope. On Node 18 `globalThis.crypto` is an object on

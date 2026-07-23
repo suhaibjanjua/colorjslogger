@@ -18,7 +18,7 @@
  * no recognisable shape (e.g. 'the password is hunter2'). No key- or
  * shape-based scheme can. That remains the caller's responsibility.
  *
- * Copyright: (c) 2019-2025 Suhaib Janjua
+ * Copyright: (c) 2019-2026 Suhaib Janjua
  * License: MIT
  */
 

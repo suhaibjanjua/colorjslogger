@@ -489,7 +489,7 @@ console.log(jslogger.about());
 ```text
 5.0.0
 Website: https://github.com/suhaibjanjua/colorjslogger 
- Copyright: (c) 2019-2025 Suhaib Janjua
+ Copyright: (c) 2019-2026 Suhaib Janjua
 ```
 
 ---
@@ -694,6 +694,6 @@ npm run build   # UMD + ESM + types into dist/
 MIT — see [LICENSE.md](LICENSE.md).
 
 <div align="center">
-<sub>Built by <b><a href="http://www.suhaibjanjua.com/">Suhaib Janjua</a></b> · since Mon Aug 12 2019 · Copyright © 2019–2025</sub>
+<sub>Built by <b><a href="http://www.suhaibjanjua.com/">Suhaib Janjua</a></b> · since Mon Aug 12 2019 · Copyright © 2019–2026</sub>
 </div>
 </content>

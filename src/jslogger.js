@@ -5,7 +5,7 @@
  * It allows to print color logs with pre-defined 5 levels of logging
  * It has a debug mode in which you can print logs during dev and then set it to false to avoid printing confidential logs during production
  * Website: https://github.com/suhaibjanjua/colorjslogger
- * Copyright: (c) 2019-2025 Suhaib Janjua
+ * Copyright: (c) 2019-2026 Suhaib Janjua
  * License: MIT
  */
 
@@ -411,7 +411,7 @@ const ColorJSLogger = {
    * @returns {string} About information
    */
   about() {
-    return 'Website: https://github.com/suhaibjanjua/colorjslogger \n Copyright: (c) 2019-2025 Suhaib Janjua';
+    return 'Website: https://github.com/suhaibjanjua/colorjslogger \n Copyright: (c) 2019-2026 Suhaib Janjua';
   },
 
   /**
