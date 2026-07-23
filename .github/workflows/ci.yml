@@ -12,12 +12,15 @@ jobs:
     
     strategy:
       matrix:
-        # Node 16 cannot build: a transitive dependency needs the global
-        # `crypto` that only landed in Node 18, so `npm run build` dies with
-        # 'ReferenceError: crypto is not defined'. Every CI run failed on this
-        # from April 2026 until it was dropped. Node 16 has been EOL since
-        # September 2023; package.json engines now says >=18 to match.
-        node-version: [18.x, 20.x, 22.x]
+        # Node 18 and below cannot build. @rollup/plugin-terser runs terser in
+        # a worker thread, and serialize-javascript calls bare `crypto` at
+        # module scope. On Node 18 `globalThis.crypto` exists on the main
+        # thread but is undefined inside workers, so the build dies with
+        # 'ReferenceError: crypto is not defined' — while `npm test` passes,
+        # which is what makes this easy to misdiagnose. Node 20 is the first
+        # release whose worker global scope has it. 16 and 18 are both EOL;
+        # package.json engines says >=20 to match.
+        node-version: [20.x, 22.x, 24.x]
     
     steps:
     - uses: actions/checkout@v4
@@ -61,10 +64,10 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Use Node.js 18.x
+    - name: Use Node.js 20.x
       uses: actions/setup-node@v4
       with:
-        node-version: 18.x
+        node-version: 20.x
         registry-url: 'https://registry.npmjs.org'
         cache: 'npm'
     

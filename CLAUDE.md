@@ -171,9 +171,14 @@ allow-list, by contrast, is whole-key — an allow-list must not silently widen.
   Node 18/20/22, then auto-tags, auto-releases, and **auto-publishes to npm on any push
   to master where package.json's version line changed**. Bumping the version and
   pushing *is* a release. Treat version bumps as live ammunition.
-- **Node 16 cannot build this project** — a transitive dep needs the global `crypto`
-  added in Node 18. It was in the matrix until v5, so every CI run failed from April
-  2026 until then, and every dependabot PR inherited a red check. `engines` says >=18.
+- **Node 18 and below cannot build this project. Node 20 is the floor.**
+  `@rollup/plugin-terser` runs terser in a **worker thread**, and `serialize-javascript`
+  calls bare `crypto` at module scope. On Node 18 `globalThis.crypto` is an object on
+  the main thread but **`undefined` inside a worker**, so `npm run build` dies with
+  `ReferenceError: crypto is not defined` — while `npm test` passes, which is what makes
+  this easy to misdiagnose. Node 20 is the first release whose worker global scope has
+  it. Verified locally: 18.20.8 fails, 20.20.2 passes. `engines` says >=20.
+  **Do not lower it without running `npm run build`, not just the tests.**
 - Jest enforces coverage thresholds (88% statements / 80% branches / 100% functions).
 
 ## Security invariants

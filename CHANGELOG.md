@@ -61,9 +61,14 @@ suppressed console output while writing the raw message to the buffer, so
 - **BREAKING: `objLogs` is no longer a plain string property.** It is a
   deprecated accessor: reads return the retained window, `objLogs = ''` still
   clears, any other write warns and is ignored. Use `getLogs()` / `clearLogs()`.
-- **BREAKING: `engines` now requires Node >= 18** (was `>=12`). Node 16 could
-  not build the project at all — a transitive dependency needs the global
-  `crypto` added in Node 18 — and every CI run had failed on it since April.
+- **BREAKING: `engines` now requires Node >= 20** (was `>=12`). Node 18 and
+  below cannot build the project: `@rollup/plugin-terser` runs terser in a
+  worker thread and `serialize-javascript` calls bare `crypto` at module
+  scope, but on Node 18 `globalThis.crypto` is present only on the main
+  thread and is `undefined` inside workers, so the build fails with
+  `ReferenceError: crypto is not defined`. Tests pass on 18; only the build
+  breaks. Node 20 is the first release whose workers expose it. CI had been
+  red on this since April 2026 (then via Node 16, which lacks it entirely).
 - **BREAKING: the `browser` package field was removed.** It pointed at
   `dist/jslogger.umd.js`, a file no build has ever produced. `main` is a
   browser-safe UMD bundle; bundlers should use `module`/`exports`.
